@@ -1,0 +1,82 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# Data (never commit raw data)
+data/raw/
+data/processed/
+*.duckdb
+*.parquet
+*.gpickle
+*.h5
+*.hdf5
+
+# Logs
+logs/
+*.log
+
+# One-off utility/VM scripts (move to scratch/ instead)
+scripts/vm_*.py
+scripts/check_*.py
+scripts/debug_*.py
+scripts/connect_*.py
+scripts/sync_*.py
+scripts/install_*.sh
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Windows path fragments accidentally created as files in repo root
+C:*
+*:Temp*
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# Sphinx
+docs/_build/

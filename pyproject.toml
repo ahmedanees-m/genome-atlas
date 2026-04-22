@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "genome-atlas"
+version = "0.7.2"
+description = "Knowledge graph and GNN benchmark for programmable genome-writing enzymes, with an editor-selection API"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Anees Ahmed", email = "ahmedaneesm@gmail.com"}]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "networkx>=3.0",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "pyarrow>=11.0",
+    "pyyaml>=6.0",
+    "scikit-learn>=1.3",
+    "click>=8.0",
+]
+
+[project.optional-dependencies]
+gnn = [
+    "torch>=2.0",
+    "torch-geometric>=2.3",
+]
+dev = ["pytest>=7.0", "pytest-cov>=4.0", "black>=23.0", "flake8>=6.0", "sphinx>=7.0"]
+quantum = ["qiskit>=1.0", "qiskit-machine-learning>=0.7"]
+all = [
+    "torch>=2.0", "torch-geometric>=2.3",
+    "pytest>=7.0", "pytest-cov>=4.0", "black>=23.0", "flake8>=6.0",
+    "sphinx>=7.0", "qiskit>=1.0", "qiskit-machine-learning>=0.7",
+]
+
+[project.scripts]
+genome-atlas = "genome_atlas.cli:cli"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.setuptools.packages.find]
+include = ["genome_atlas*"]
+
+[tool.setuptools.package-data]
+genome_atlas = ["data/*.yaml"]
+
+[tool.coverage.run]
+source = ["genome_atlas"]
+omit = [
+    "*/tests/*",
+    "*/scripts/*",
+    "*/notebooks/*",
+    "genome_atlas/models/*",
+    "genome_atlas/graph/build.py",
+    "genome_atlas/graph/view.py",
+]
