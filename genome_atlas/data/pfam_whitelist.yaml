@@ -1,0 +1,124 @@
+# Pfam whitelist v1.0 — genome-writing enzyme families
+# Each entry: accession, name, mechanism_bucket, example_systems, reference
+# Mechanism buckets (Tier A of MECH-CLASS):
+#   DSB_NUCLEASE | DSB_FREE_TRANSEST_RECOMBINASE | TRANSPOSASE
+
+domains:
+  # --- CRISPR-Cas Class 2 nucleases (DSB nucleases) ---
+  - accession: PF18541    # Cas9 REC/HNH/RuvC
+    name: Cas9_HNH
+    mechanism_bucket: DSB_NUCLEASE
+    example_systems: [SpCas9, SaCas9]
+    reference: "Jinek 2012 Science"
+  - accession: PF16592    # Cas12a (Cpf1)
+    name: Cas12a
+    mechanism_bucket: DSB_NUCLEASE
+    example_systems: [AsCas12a, LbCas12a]
+    reference: "Zetsche 2015 Cell"
+  - accession: PF14239    # Cas12f (compact Cas12)
+    name: Cas12f
+    mechanism_bucket: DSB_NUCLEASE
+    example_systems: [Un1Cas12f1, AsCas12f]
+    reference: "Kim 2022 Nat Biotechnol"
+
+  # --- RuvC-like resolvase fold (shared by Cas12, Fanzor, IS110) ---
+  - accession: PF01548    # DEDD_Tnp_IS110 — THE key domain for Paper 2's composite case
+    name: DEDD_Tnp_IS110
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    example_systems: [IS621, IS110]
+    reference: "Durrant 2024 Nature"
+    notes: "N-terminal RuvC-fold DEDD domain of IS110 family; composite with PF02371"
+  - accession: PF02371    # Transposase_20 — C-terminal serine domain of IS110
+    name: Transposase_20_IS110_serine
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    example_systems: [IS621, IS110]
+    reference: "Hiraizumi 2024 Nature"
+    notes: "C-terminal Tnp/serine domain; paired with PF01548 in IS110 proteins"
+
+  # --- TnpB/IscB/Fanzor family (OMEGA / ancestral CRISPR) ---
+  - accession: PF18297    # TnpB_IS200 superfamily
+    name: TnpB_IS200
+    mechanism_bucket: DSB_NUCLEASE
+    example_systems: [ISDra2_TnpB, IscB]
+    reference: "Altae-Tran 2021 Science"
+  # Fanzor Pfam still being finalized in InterPro; include IS200-like umbrella
+  # and rely on structure-based annotation for Fanzor-specific hits
+
+  # --- DDE-family transposases ---
+  - accession: PF13976    # DDE_Tnp_1
+    name: DDE_Tnp_1
+    mechanism_bucket: TRANSPOSASE
+    example_systems: [Tn5, Mariner]
+    reference: "Reznikoff 2008 Annu Rev Genet"
+  - accession: PF00665    # rve (integrase core)
+    name: Integrase_core_rve
+    mechanism_bucket: TRANSPOSASE
+    example_systems: [HIV_integrase, Tn5_DDE]
+    reference: "Rice 1998 Cell"
+  - accession: PF01610    # DDE_Tnp_IS1
+    name: DDE_Tnp_IS1
+    mechanism_bucket: TRANSPOSASE
+    example_systems: [IS1, IS3-family]
+    reference: "Siguier 2015 Microbiol Spectr"
+
+  # --- Tn7-family + CAST (class I-F and V-K) ---
+  - accession: PF13701    # Tn7_transposase_TnsB
+    name: TnsB
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    example_systems: [CAST-I-F, Tn7]
+    reference: "Klompe 2019 Nature"
+  - accession: PF05621    # TnsC (AAA+ ATPase)
+    name: TnsC
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    example_systems: [CAST-I-F, Tn7]
+    reference: "Peters 2017 PNAS"
+
+  # --- Tyrosine recombinases ---
+  - accession: PF00589    # Phage_integrase (Cre/lambda-Int superfamily)
+    name: Phage_integrase
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    example_systems: [Cre, Flp, lambda-Int]
+    reference: "Grainge 2004 J Mol Biol"
+
+  # --- Serine recombinases (large + small) ---
+  - accession: PF00239    # Resolvase (small serine recombinase)
+    name: Resolvase
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    example_systems: [gamma-delta, Sin]
+    reference: "Smith 2004 Mol Microbiol"
+  - accession: PF07508    # Recombinase (large serine)
+    name: Recombinase_large_serine
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    example_systems: [Bxb1, phiC31, TP901-1]
+    reference: "Stark 2017 Microbiol Spectr"
+
+  # --- HNH / HUH nucleases ---
+  - accession: PF01844    # HNH endonuclease
+    name: HNH
+    mechanism_bucket: DSB_NUCLEASE
+    example_systems: [I-HmuI, Cas9_HNH_strand]
+    reference: "Stoddard 2011 Structure"
+  - accession: PF01051    # Rep (HUH rolling-circle)
+    name: Rep_HUH
+    mechanism_bucket: TRANSPOSASE
+    example_systems: [IS200_Rep, phiX174]
+    reference: "Chandler 2013 Nat Rev Microbiol"
+
+# -- auxiliary domains (scaffolding and RNA binding; NOT by themselves entry criteria)
+# These are not inclusion gates but ARE recorded when found alongside a primary domain
+auxiliary:
+  - accession: PF18516    # WED (Fanzor/Cas12 wedge domain)
+    name: WED
+  - accession: PF18547    # REC (Cas9/Cas12 recognition lobe)
+    name: REC
+  - accession: PF13639    # Zinc finger (many types)
+    name: ZnF_generic
+  - accession: PF03374    # TAL effector central repeat
+    name: TALE_repeat
+
+# Version metadata
+version: "1.0.0"
+created: "2026-04-29"
+curator: "Anees Ahmed"
+citation_count: 16
+review_pending: false
