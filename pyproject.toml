@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "setuptools-scm>=8", "wheel"]
+requires = ["setuptools>=68", , "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,7 +9,6 @@ readme = "README.md"
 license = {text = "MIT"}
 authors = [{name = "Anees Ahmed", email = "anees.ahmed2022@vitstudent.ac.in"}]
 requires-python = ">=3.10"
-dynamic = ["version"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -45,9 +44,6 @@ Changelog = "https://github.com/ahmedanees-m/genome-atlas/blob/main/CHANGELOG.md
 
 [tool.setuptools.packages.find]
 include = ["genome_atlas*"]
-
-[tool.setuptools_scm]
-write_to = "genome_atlas/_version.py"
 
 [tool.ruff]
 line-length = 100
