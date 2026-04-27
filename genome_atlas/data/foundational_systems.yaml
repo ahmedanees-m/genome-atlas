@@ -1,0 +1,136 @@
+# Hand-curated systems used as the core System node set in ATLAS.
+# Every entry here becomes a System node with outgoing edges to Proteins and Mechanisms.
+# Protein accessions are chosen from those present in targets_v2.parquet (9,500-protein atlas).
+
+systems:
+  - name: SpCas9
+    type: CRISPR-Cas
+    subtype: Type II-A
+    mechanism_bucket: DSB_NUCLEASE
+    proteins: [Q99ZW2]
+    rna_components: [sgRNA]
+    canonical_structures: [4UN3, 5F9R]
+    reference_doi: "10.1126/science.1225829"
+    notes: "Canonical CRISPR-Cas9; guide RNA-targeted DSB"
+
+  - name: Cas12a
+    type: CRISPR-Cas
+    subtype: Type V-A
+    mechanism_bucket: DSB_NUCLEASE
+    proteins: [A0Q7Q2]
+    rna_components: [crRNA]
+    canonical_structures: [5B43, 5ID6]
+    reference_doi: "10.1016/j.cell.2015.09.038"
+
+  - name: Cas12f
+    type: CRISPR-Cas
+    subtype: Type V-F
+    mechanism_bucket: DSB_NUCLEASE
+    proteins: [A0A482D308, A0A1J4UAV9, A0A2U3D0N8, P0DW62]
+    rna_components: [crRNA, tracrRNA]
+    canonical_structures: [7SMB]
+    reference_doi: "10.1038/s41587-022-01245-x"
+
+  - name: CAST-V-K
+    type: CRISPR-Transposon
+    subtype: Type V-K
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    proteins: []
+    rna_components: [sgRNA]
+    canonical_structures: [7M99, 7M9B]
+    reference_doi: "10.1126/science.aax9181"
+
+  - name: CAST-I-F_evoCAST
+    type: CRISPR-Transposon
+    subtype: Type I-F
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    proteins: []
+    rna_components: [crRNA]
+    canonical_structures: [7JE2]
+    reference_doi: "10.1126/science.adt5199"
+    notes: "Witte 2025 -- PACE-evolved; >200x activity in human cells"
+
+  - name: IS621_bridge_recombinase
+    type: Bridge_Recombinase
+    subtype: IS110
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    proteins: []
+    rna_components: [bridge_RNA]
+    canonical_structures: []
+    reference_doi: "10.1038/s41586-024-07552-4"
+    notes: "Durrant 2024, Hiraizumi 2024 -- composite RuvC-fold + serine mechanism"
+
+  - name: SpuFz1_Fanzor
+    type: OMEGA
+    subtype: Fanzor1
+    mechanism_bucket: DSB_NUCLEASE
+    proteins: []
+    rna_components: [omegaRNA]
+    canonical_structures: []
+    reference_doi: "10.1038/s41586-023-06356-2"
+
+  - name: MmeFz2_Fanzor
+    type: OMEGA
+    subtype: Fanzor2
+    mechanism_bucket: DSB_NUCLEASE
+    proteins: []
+    rna_components: [omegaRNA]
+    canonical_structures: []
+    reference_doi: "10.1038/s41589-025-01902-7"
+
+  - name: Cre_recombinase
+    type: Tyrosine_recombinase
+    subtype: null
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    proteins: []
+    rna_components: []
+    canonical_structures: []
+    reference_doi: "10.1038/39141"
+
+  - name: Bxb1_integrase
+    type: Large_serine_recombinase
+    subtype: null
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    proteins: []
+    rna_components: []
+    canonical_structures: []
+    reference_doi: "10.1073/pnas.061041098"
+
+  - name: Tn5_transposase
+    type: DDE_transposase
+    subtype: null
+    mechanism_bucket: TRANSPOSASE
+    proteins: [Q46731]
+    rna_components: []
+    canonical_structures: []
+    reference_doi: "10.1016/S0092-8674(00)80650-5"
+
+  - name: PE2_prime_editor
+    type: Prime_editor
+    subtype: null
+    mechanism_bucket: DSB_NUCLEASE
+    proteins: []
+    rna_components: [pegRNA]
+    canonical_structures: []
+    reference_doi: "10.1038/s41586-019-1711-4"
+    notes: "Fusion of Cas9 nickase + MLV RT"
+
+  - name: eePASSIGE
+    type: Engineered_recombinase
+    subtype: null
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    proteins: []
+    rna_components: []
+    canonical_structures: []
+    reference_doi: "10.1038/s41551-024-01234-9"
+    notes: "Evolved recombinase for large insertions -- Pandey 2025"
+
+  - name: TnsABC_CAST
+    type: CRISPR-Transposon
+    subtype: Type I-F
+    mechanism_bucket: DSB_FREE_TRANSEST_RECOMBINASE
+    proteins: [P13988, P05846]
+    rna_components: [crRNA]
+    canonical_structures: []
+    reference_doi: "10.1126/science.aax9181"
+    notes: "Tn7-family CAST machinery"
