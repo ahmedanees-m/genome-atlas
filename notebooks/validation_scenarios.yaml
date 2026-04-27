@@ -1,0 +1,100 @@
+scenarios:
+  - name: "Sickle cell disease - BCL11A enhancer disruption"
+    params:
+      cell_type: "HSC"
+      edit_type: "deletion"
+      cargo_size_bp: 0
+      delivery: "electroporation"
+    expected_top3: [SpCas9, Cas12a]
+    published_editor: SpCas9
+    reference: "Frangoul 2021 NEJM"
+
+  - name: "Dystrophin restoration in DMD - exon skipping"
+    params:
+      cell_type: "HEK293T"
+      edit_type: "insertion"
+      cargo_size_bp: 500
+      delivery: "AAV"
+    expected_top3: [SpuFz1_Fanzor, MmeFz2_Fanzor]
+    published_editor: SpuFz1_Fanzor
+    reference: "Wei 2025 Nat Chem Biol"
+
+  - name: "Large gene integration - CAR-T knockin"
+    params:
+      cell_type: "HEK293T"
+      edit_type: "insertion"
+      cargo_size_bp: 5000
+      delivery: "electroporation"
+    expected_top3: [CAST-I-F_evoCAST, IS621_bridge_recombinase, eePASSIGE]
+    published_editor: CAST-I-F_evoCAST
+    reference: "Witte 2025 Science"
+
+  - name: "Point mutation correction"
+    params:
+      cell_type: "HEK293T"
+      edit_type: "SNV"
+      cargo_size_bp: 1
+      delivery: "AAV"
+    expected_top3: [PE2_prime_editor]
+    published_editor: PE2_prime_editor
+    reference: "Anzalone 2019 Nature"
+
+  - name: "Megabase-scale rearrangement"
+    params:
+      cell_type: "HEK293T"
+      edit_type: "inversion"
+      cargo_size_bp: 1000000
+      delivery: "electroporation"
+    expected_top3: [IS621_bridge_recombinase]
+    published_editor: IS621_bridge_recombinase
+    reference: "Perry 2025 Science"
+
+  - name: "Liver targeting - PCSK9 knockdown"
+    params:
+      cell_type: "HEK293T"
+      edit_type: "deletion"
+      cargo_size_bp: 0
+      delivery: "AAV"
+    expected_top3: [SpCas9, Cas12a, Cas12f]
+    published_editor: SpCas9
+    reference: "Musunuru 2021 NEJM"
+
+  - name: "Retinal editing - CEP290 restoration"
+    params:
+      cell_type: "HEK293T"
+      edit_type: "insertion"
+      cargo_size_bp: 200
+      delivery: "AAV"
+    expected_top3: [PE2_prime_editor, CAST-V-K]
+    published_editor: PE2_prime_editor
+    reference: "Suh 2024 Nat Biomed Eng"
+
+  - name: "Immune-cell therapy - TRAC knockout"
+    params:
+      cell_type: "K562"
+      edit_type: "deletion"
+      cargo_size_bp: 0
+      delivery: "electroporation"
+    expected_top3: [SpCas9, Cas12a]
+    published_editor: SpCas9
+    reference: "Stadtmauer 2020 Science"
+
+  - name: "Bxb1 landing pad integration"
+    params:
+      cell_type: "HEK293T"
+      edit_type: "insertion"
+      cargo_size_bp: 1000
+      delivery: "electroporation"
+    expected_top3: [Bxb1_integrase, Cre_recombinase]
+    published_editor: Bxb1_integrase
+    reference: "Kerafast 2016"
+
+  - name: "Compact genome editor for AAV delivery"
+    params:
+      cell_type: "HEK293T"
+      edit_type: "deletion"
+      cargo_size_bp: 0
+      delivery: "AAV"
+    expected_top3: [Cas12f, MmeFz2_Fanzor, SpuFz1_Fanzor]
+    published_editor: Cas12f
+    reference: "Kim 2022 Nat Biotechnol"

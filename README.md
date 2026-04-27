@@ -19,9 +19,13 @@ pip install genome-atlas
 ## Quickstart
 
 ```python
-from genome_atlas import Atlas
+from genome_atlas.api import Atlas
 
-atlas = Atlas.load()
+atlas = Atlas(
+    graph_path="atlas.gpickle",
+    embeddings_path="embeddings.parquet",
+    targets_path="targets.parquet",
+)
 recs = atlas.select_editor(
     cell_type="HEK293T",
     edit_type="insertion",
@@ -30,8 +34,25 @@ recs = atlas.select_editor(
     top_k=5,
 )
 for r in recs:
-    print(r.system, r.pen_score, r.aav_fit)
+    print(r.system, r.pen_score, r.dsb_free)
 ```
+
+## CLI
+
+```bash
+genome-atlas query-system System_SpCas9
+genome-atlas select --cell HEK293T --edit deletion --top-k 5
+```
+
+## Benchmarks
+
+| Model | AUROC | AUPRC |
+|-------|-------|-------|
+| GAT (1 head, residual) | 0.9705 [0.9446–0.9964] | 0.9421 |
+| GraphSAGE | 0.9664 [0.9405–0.9923] | 0.9184 |
+| Classical RBF | 0.9331 | — |
+| Quantum Kernel | 0.8731 | — |
+| Node2Vec | 0.8202 [0.8052–0.8342] | 0.8905 |
 
 ## Citation
 
