@@ -44,6 +44,12 @@ class Atlas:
         self._length_map: dict[str, int] = {}
         self._protein_map: dict[str, dict] = {}
 
+        # Lookup caches for attribute-based queries (handles both named-ID and
+        # numeric-ID graph conventions, e.g. System_SpCas9 vs System_1)
+        self._system_by_name: dict[str, str] = {}
+        self._domain_by_accession: dict[str, str] = {}
+        self._protein_by_accession: dict[str, str] = {}
+
         if targets_path and targets_path.exists():
             targets = pd.read_parquet(targets_path, columns=["accession", "length", "protein_name", "organism_name"])
             self._length_map = {
@@ -64,6 +70,16 @@ class Atlas:
             with open(gpickle_path, "rb") as f:
                 self._G = pickle.load(f)
 
+        if self._G is not None:
+            for n, d in self._G.nodes(data=True):
+                nt = d.get("node_type", "")
+                if nt == "System" and "name" in d:
+                    self._system_by_name[d["name"]] = n
+                elif nt == "Domain" and "accession" in d:
+                    self._domain_by_accession[d["accession"]] = n
+                elif nt == "Protein" and "accession" in d:
+                    self._protein_by_accession[d["accession"]] = n
+
         if embeddings_path and embeddings_path.exists():
             self._embeddings = pd.read_parquet(embeddings_path).set_index("node_id")
 
@@ -75,18 +91,30 @@ class Atlas:
 
     # ------- Basic queries -------
 
+    def _resolve_node(self, prefix: str, key: str,
+                      cache: dict[str, str]) -> Optional[str]:
+        """Resolve a node ID by trying the named-ID convention then the cache."""
+        direct = f"{prefix}_{key}"
+        if self._G is not None and direct in self._G:
+            return direct
+        return cache.get(key)
+
     def query_system(self, name: str) -> dict:
         """Return system metadata by name."""
-        node_id = f"System_{name}"
-        if self._G is not None and node_id in self._G:
+        node_id = self._resolve_node("System", name, self._system_by_name)
+        if self._G is not None and node_id is not None and node_id in self._G:
             return {"node_id": node_id, **self._G.nodes[node_id]}
         raise KeyError(f"System '{name}' not found")
 
     def query_protein(self, accession: str) -> dict:
         """Return protein metadata by UniProt accession."""
-        node_id = f"Protein_{accession}"
-        if node_id in self._protein_map:
-            return {"node_id": node_id, **self._protein_map[node_id]}
+        node_id = self._resolve_node("Protein", accession, self._protein_by_accession)
+        map_key = f"Protein_{accession}"
+        if node_id is not None and self._G is not None and node_id in self._G:
+            meta = self._protein_map.get(map_key, {})
+            return {"node_id": node_id, **self._G.nodes[node_id], **meta}
+        if map_key in self._protein_map:
+            return {"node_id": map_key, **self._protein_map[map_key]}
         raise KeyError(f"Protein '{accession}' not found")
 
     def systems(self, mechanism_bucket: Optional[str] = None) -> pd.DataFrame:
@@ -104,13 +132,14 @@ class Atlas:
         """Return proteins that have a given Pfam domain."""
         if self._G is None:
             raise RuntimeError("Graph not loaded")
-        domain_node = f"Domain_{domain_accession}"
-        if domain_node not in self._G:
+        domain_node = self._resolve_node("Domain", domain_accession, self._domain_by_accession)
+        if domain_node is None or domain_node not in self._G:
             raise KeyError(f"Domain '{domain_accession}' not found")
         proteins = []
         for u, v, edge_data in self._G.edges(data=True):
             if edge_data.get("edge_type") == "HAS_DOMAIN" and v == domain_node:
-                info = self._protein_map.get(u, {"node_id": u})
+                acc = self._G.nodes[u].get("accession", "")
+                info = self._protein_map.get(f"Protein_{acc}", {"node_id": u, **self._G.nodes[u]})
                 proteins.append(info)
         return pd.DataFrame(proteins)
 
@@ -118,8 +147,8 @@ class Atlas:
         """Return domains of a given protein."""
         if self._G is None:
             raise RuntimeError("Graph not loaded")
-        protein_node = f"Protein_{accession}"
-        if protein_node not in self._G:
+        protein_node = self._resolve_node("Protein", accession, self._protein_by_accession)
+        if protein_node is None or protein_node not in self._G:
             raise KeyError(f"Protein '{accession}' not found")
         domains = []
         for u, v, edge_data in self._G.edges(data=True):
@@ -131,8 +160,8 @@ class Atlas:
         """Return structures (PDB / AlphaFold) of a given protein."""
         if self._G is None:
             raise RuntimeError("Graph not loaded")
-        protein_node = f"Protein_{accession}"
-        if protein_node not in self._G:
+        protein_node = self._resolve_node("Protein", accession, self._protein_by_accession)
+        if protein_node is None or protein_node not in self._G:
             raise KeyError(f"Protein '{accession}' not found")
         structures = []
         for u, v, edge_data in self._G.edges(data=True):

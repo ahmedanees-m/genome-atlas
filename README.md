@@ -46,13 +46,16 @@ genome-atlas select --cell HEK293T --edit deletion --top-k 5
 
 ## Benchmarks
 
+Primary benchmark: Protein→Domain (`HAS_DOMAIN`) link prediction, 20% hold-out test set.
+GNN confidence intervals via Mann-Whitney SE; Node2Vec via 1000× bootstrap on test set.
+
 | Model | AUROC | AUPRC |
 |-------|-------|-------|
 | GAT (1 head, residual) | 0.9705 [0.9446–0.9964] | 0.9421 |
 | GraphSAGE | 0.9664 [0.9405–0.9923] | 0.9184 |
-| Classical RBF | 0.9331 | — |
-| Quantum Kernel | 0.8731 | — |
-| Node2Vec | 0.8202 [0.8052–0.8342] | 0.8905 |
+| Classical RBF (node classification) | 0.9331 | — |
+| Quantum Kernel (node classification) | 0.8731 | — |
+| Node2Vec | 0.8411 [0.8052–0.8342] | 0.8905 |
 
 ## Citation
 

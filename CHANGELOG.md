@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-04-28
+
+### Fixed
+
+- **API graph queries**: `query_system()`, `proteins_with_domain()`, `domains_of_protein()`, and `structures_of_protein()` now resolve nodes via attribute lookup caches at init time, supporting both named-ID graphs (tests) and the production numeric-ID graph (`System_1`, `Protein_1`, etc.). Previously all graph-based queries silently raised `KeyError` against the real atlas.
+- **CI workflow**: Replaced unset shell variable `${pkg}` with literal `genome_atlas` in the import smoke test step.
+- **README benchmarks**: Node2Vec AUROC corrected to 0.8411 (single-run test-set value, consistent with GNN reporting); CI range [0.8052–0.8342] retained from bootstrap. Quantum Kernel and Classical RBF rows annotated as node-classification tasks, not link prediction.
+
 ## [0.5.1] - 2026-04-27
 
 ### Fixed
