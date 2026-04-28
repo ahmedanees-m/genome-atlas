@@ -1,0 +1,33 @@
+{
+  "node2vec": {
+    "auroc": 0.8410897161336213,
+    "auprc": 0.8904635137090064,
+    "ci_lo": 0.8052207849144436,
+    "ci_hi": 0.8341892972538144,
+    "ci_method": "bootstrap_1000x_test_set"
+  },
+  "graphsage": {
+    "auroc": 0.9663926475073469,
+    "auprc": 0.918402988767943,
+    "ci_lo": 0.9405,
+    "ci_hi": 0.9923,
+    "ci_method": "mann_whitney_se"
+  },
+  "gat": {
+    "auroc": 0.970457240569076,
+    "auprc": 0.9420585423128657,
+    "ci_lo": 0.9446,
+    "ci_hi": 0.9964,
+    "ci_method": "mann_whitney_se"
+  },
+  "quantum_kernel": {
+    "auroc": 0.873125,
+    "auprc": 0.8429047518785302,
+    "note": "node_classification_not_link_prediction"
+  },
+  "classical_rbf": {
+    "auroc": 0.933083176985616,
+    "auprc": 0.8983671078868148,
+    "note": "node_classification_not_link_prediction"
+  }
+}
