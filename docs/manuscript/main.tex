@@ -1,0 +1,144 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx,booktabs,siunitx,multirow}
+\usepackage[numbers]{natbib}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{GENOME-ATLAS: A unified knowledge graph and embedding space for programmable genome-writing enzymes with cross-system selection decision support}
+\author{Anees Ahmed Mahaboob Ali\\ VIT University, Vellore}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Genome-writing enzymes---CRISPR, CAST, bridge recombinases, Fanzor, prime editors, and site-specific recombinases---are fragmented across specialized databases that prevent cross-system comparison and editor selection. We present GENOME-ATLAS, a unified knowledge graph of 18 curated Pfam families spanning \num{9500} proteins, \num{2239} structures (experimental and AlphaFold-predicted), and 16 foundational systems, annotated with mechanism buckets that explicitly handle composite cases such as IS110/bridge RNA (RuvC-fold domain with serine-mediated transesterification). We train heterogeneous GraphSAGE and Graph Attention Network embeddings initialized with ESM-2 protein language model vectors and benchmark against Node2Vec and a quantum graph kernel baseline; GraphSAGE achieves link-prediction AUROC of 0.9664 (95\% CI 0.9405--0.9923) on Protein--Domain edges, statistically comparable to GAT (AUROC 0.9705, 95\% CI 0.9446--0.9964). A selection decision support API ranks candidate editors for therapeutic use cases (cell type, edit type, cargo size, delivery vector); on 10 published therapeutic editing scenarios, ATLAS correctly includes the published editor in its top-3 recommendations for 7 of 10 (70.0\%). The full database is available as a pip package (\texttt{pip install genome-atlas}), with documentation at \url{https://genome-atlas.readthedocs.io}. GENOME-ATLAS is part of the PEN-STACK program for non-destructive genome engineering.
+\end{abstract}
+
+\section*{Introduction}
+% ~600 words. Fragmentation problem. What's missing. What ATLAS contributes.
+% Cite: Witte 2025, Perry 2025, Durrant 2024, Saito 2023, Wei 2025, Zhao 2025, Jiang 2025, Malekos 2025 (CRISPRware), Nakamae 2022.
+
+Programmable genome-writing enzymes have transformed molecular biology and therapeutic development, yet the ecosystem remains fragmented. CRISPR--Cas systems, CASTs (CRISPR-associated transposons), bridge recombinases, Fanzor nucleases, prime editors, and site-specific recombinases each occupy siloed databases with incompatible ontologies. A therapeutic researcher seeking the optimal editor for a given cell type, edit size, and delivery modality must manually cross-reference CRISPRCasdb, UniProt, PDB, AlphaFold DB, and the primary literature---a process that scales poorly as the discovery space expands.
+
+GENOME-ATLAS addresses this fragmentation by unifying 18 curated Pfam families into a single heterogeneous knowledge graph with five node types (System, Protein, Domain, Structure, Organism) and six edge types. Each System node is annotated with a mechanism bucket (DSB nuclease, DSB-free transesterification/recombination, transposase, or prime editor) that enables quantitative cross-system comparison. The graph is embedded via heterogeneous GraphSAGE and Graph Attention Networks (GAT) initialized with ESM-2 protein language model vectors, producing a 128-dimensional latent space in which structurally or functionally related editors cluster. A selection decision support API scores candidate systems against user-specified therapeutic constraints; on 10 published scenarios the published editor appears in the top-3 recommendations with 70.0\% accuracy. The three misses---DMD exon skipping, point-mutation correction, and Bxb1 landing-pad integration---reveal specific biological blind spots in heuristic scoring that motivate the physics-informed PEN-SCORE function (Paper 3).
+
+\section*{Database construction}
+% ~1000 words. Data sources, Pfam whitelist methodology (v1.2.1 with live InterPro verification), TSV funnel, ontology, DuckDB schema, ingestion.
+% Cite: UniProt, PDB, AlphaFold DB, Pfam/InterPro.
+% Disclose: CRISPRCasdb placeholder, ISfinder GitHub mirror, AFDB v6.
+
+\subsection*{Scope and data sources}
+ATLAS v0.5.1 covers 18 Pfam families (Table S1) selected from the union of (i) CRISPRCasdb typeable systems, (ii) ISfinder transposase families, (iii) Pfam clans linked to known genome-writing domains, and (iv) manual curation of recent literature (Fanzor, bridge recombinase, prime editor). Protein sequences were retrieved from UniProt via the REST API; structural coordinates from the Protein Data Bank (PDB) and AlphaFold DB v6; domain annotations from InterPro via live Pfam API verification against release 37.0.
+
+\subsection*{Pfam whitelist and verification}
+A whitelist of 18 Pfam accessions (\texttt{pfam\_whitelist.yaml}) was compiled and verified against InterPro in real time. Each accession was checked for active status, parent clan membership, and cross-referenced against the UniProt proteome. The whitelist is version-locked to Pfam 37.0 / InterPro 96.0.
+
+\subsection*{Graph schema}
+The ATLAS graph is a directed multi-graph with node types \{System, Protein, Domain, Structure, Organism\} and edge types \{HAS\_PROTEIN, HAS\_DOMAIN, HAS\_STRUCTURE, DERIVED\_FROM, MECHANISM\_OF, SIMILAR\_TO\}. Protein nodes carry ESM-2 640-dimensional embeddings; Structure nodes carry pLDDT scores and resolution metadata. The graph is materialized as a NetworkX MultiDiGraph and exported to PyTorch Geometric HeteroData for GNN training.
+
+\subsection*{DuckDB backend}
+A DuckDB relational backend supports SQL queries over the protein-target table (9,500 rows), structure metadata (2,239 rows), and edge tables (\textgreater{}15,000 rows). The backend is used for data validation and exports but is not required for graph queries.
+
+\section*{Embedding space and validation}
+% ~700 words. ESM-2 initialization, Node2Vec/GraphSAGE/GAT, link prediction benchmark.
+
+\subsection*{ESM-2 protein embeddings}
+All Protein nodes were embedded with ESM-2 (esm2\_t33\_650M\_UR50D) yielding 640-dimensional vectors. These serve as initial node features for the heterogeneous graph neural networks.
+
+\subsection*{Heterogeneous GNN models}
+We trained two heterogeneous GNN architectures:
+\begin{itemize}
+    \item \textbf{GraphSAGE} (2-layer, 128 hidden channels, residual connections, weight decay $10^{-4}$)
+    \item \textbf{GAT} (2-layer, 128 hidden channels, 1 attention head, residual connections, weight decay $10^{-4}$)
+\end{itemize}
+Both models project ESM-2 features to 128-dimensional hidden states via learned linear layers. A LinkPredictor module (concatenation + MLP) scores Protein--Domain edge existence.
+
+\subsection*{Benchmark results}
+Table~\ref{tab:benchmark} reports link-prediction performance on the held-out Protein--Domain edge set (tier-1 prediction). GraphSAGE achieves AUROC 0.9664 (bootstrap 95\% CI 0.9405--0.9923) and AUPRC 0.9184; GAT achieves AUROC 0.9705 (95\% CI 0.9446--0.9964) and AUPRC 0.9421. Both GNNs significantly outperform the Node2Vec baseline (AUROC 0.8202) and the quantum kernel baseline (AUROC 0.8731 on 4-dimensional PCA features). The classical RBF kernel (AUROC 0.9331) performs well but is outperformed by the GNNs, indicating that relational structure carries signal beyond raw feature similarity.
+
+\begin{table}[ht]
+\centering
+\caption{Primary benchmark: Protein--Domain link prediction}
+\label{tab:benchmark}
+\begin{tabular}{lcc}
+\toprule
+Model & AUROC & AUPRC \\
+\midrule
+GAT (1 head, residual) & 0.9705 [0.9446--0.9964] & 0.9421 \\
+GraphSAGE (2-layer) & 0.9664 [0.9405--0.9923] & 0.9184 \\
+Classical RBF & 0.9331 & --- \\
+Quantum Kernel & 0.8731 & --- \\
+Node2Vec & 0.8202 [0.8052--0.8342] & 0.8905 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Topology consistency}
+Structure--Protein edges (tier-2) exhibit near-perfect AUROC (0.995--0.997) because the mean structure degree is only 0.72; these edges are reported as a consistency check rather than a primary benchmark.
+
+\section*{Selection decision support}
+% ~500 words. API, scoring rubric, 4 axes, dynamic weights.
+
+The \texttt{genome-atlas} Python package exposes a \texttt{select\_editor()} API that scores all 16 foundational systems against four axes:
+\begin{enumerate}
+    \item \textbf{DSB avoidance} --- context-aware penalty based on edit type and cargo size
+    \item \textbf{AAV deliverability} --- total coding-sequence length thresholded at 900 aa (single AAV), 2000 aa (dual AAV)
+    \item \textbf{Cargo size fit} --- mechanism-specific capacity (prime editor $\leq$200 bp; nuclease+HDR $\leq$1 kb; recombinase/CAST $\leq$50 kb)
+    \item \textbf{Cell-type compatibility} --- established human-cell editors score higher than emerging systems
+\end{enumerate}
+Dynamic weights adjust based on delivery modality and DSB preference. On 10 published therapeutic scenarios (Table~\ref{tab:validation}), the published editor appears in the top-3 recommendations for 7 of 10 (70.0\%).
+
+\begin{table}[ht]
+\centering
+\caption{Validation on published therapeutic scenarios}
+\label{tab:validation}
+\begin{tabular}{p{4.5cm}cccp{3cm}}
+\toprule
+Scenario & Published editor & Rank & Top-3? & Notes \\
+\midrule
+Sickle cell (BCL11A) & SpCas9 & 1 & Yes & Standard deletion \\
+DMD exon skipping & SpuFz1\_V4 & --- & No & DSB penalty too severe for 500 bp AAV \\
+CAR-T knockin (5 kb) & CAST-I-F\_evoCAST & 2 & Yes & Large insertion \\
+Point mutation (SNV) & PE2 & --- & No & PE2 loses to generic nucleases \\
+Megabase inversion & IS621 & 3 & Yes & Bridge recombinase \\
+Liver (PCSK9) & SpCas9 & 1 & Yes & AAV deletion \\
+Retinal (CEP290) & PE2 & 1 & Yes & Small insertion \\
+Immune (TRAC KO) & SpCas9 & 1 & Yes & Electroporation deletion \\
+Landing pad (Bxb1) & Bxb1 & --- & No & CAST outranks integrase \\
+Compact AAV editor & Cas12f & 3 & Yes & Small nuclease \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The three misses reveal specific biological blind spots in heuristic scoring: (1) compact nucleases for small-insert AAV therapies are penalized too heavily for DSB dependence; (2) prime editors lose to generic nucleases on SNV tasks because the cargo-size heuristic conflates edit precision with cargo length; (3) site-specific recombinases for landing-pad integration are outranked by DSB-free integrases due to cargo-size weighting. These cases motivate the physics-informed PEN-SCORE scoring function (Paper 3), which replaces heuristics with structure-aware mechanistic scoring.
+
+\section*{Database access and utility}
+% ~300 words.
+
+GENOME-ATLAS is distributed as a Python package via PyPI:
+\begin{verbatim}
+pip install genome-atlas
+\end{verbatim}
+A command-line interface supports system queries and editor selection:
+\begin{verbatim}
+genome-atlas query-system System_SpCas9
+genome-atlas select --cell HEK293T --edit deletion --top-k 5
+\end{verbatim}
+Full documentation is hosted at \url{https://genome-atlas.readthedocs.io}. The source code, data pipelines, and validation notebooks are available at \url{https://github.com/ahmedanees-m/genome-atlas}.
+
+\section*{Discussion}
+% ~200 words.
+
+GENOME-ATLAS v0.5.1 provides a unified, queryable knowledge graph for programmable genome-writing enzymes. The embedding space captures structural and functional relationships across CRISPR, CAST, recombinase, and transposase families, enabling cross-system link prediction with $>$96\% AUROC. The selection API offers a first-pass heuristic for therapeutic editor choice, validated at 70\% top-3 accuracy on published scenarios.
+
+Future releases will integrate the 802k-protein extended catalog (Part B), metagenomic mining pipelines (Part C), and the physics-informed PEN-SCORE selection engine (Paper 3). We also plan to incorporate MECH-CLASS mechanism classification (Paper 2) as an automated annotation layer, replacing the current manual mechanism buckets.
+
+\section*{Data availability}
+All code, data pipelines, and documentation are available at \url{https://github.com/ahmedanees-m/genome-atlas} and via PyPI (\texttt{pip install genome-atlas}). A Zenodo DOI will be minted upon acceptance. The bioRxiv preprint is cited in the references.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
