@@ -3,6 +3,6 @@ import genome_atlas
 
 
 def test_version():
-    """Verify package has a version attribute."""
+    """Verify package has a non-empty version attribute."""
     assert hasattr(genome_atlas, "__version__")
-    assert genome_atlas.__version__ == "0.0.1"
+    assert genome_atlas.__version__ not in ("", "unknown", "0.0.1")
