@@ -8,7 +8,7 @@ import pandas as pd
 import yaml
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from genome_atlas import Atlas
+from genome_atlas.api import Atlas
 
 
 def main():

@@ -69,6 +69,16 @@ systems:
     canonical_structures: []
     reference_doi: "10.1038/s41586-023-06356-2"
 
+  - name: SpuFz1_V4
+    type: OMEGA
+    subtype: Fanzor1_engineered
+    mechanism_bucket: DSB_NUCLEASE
+    proteins: []
+    rna_components: [omegaRNA]
+    canonical_structures: []
+    reference_doi: "10.1038/s41586-023-06356-2"
+    notes: "Engineered SpuFz1 variant 4; enhanced human-cell activity and thermostability"
+
   - name: MmeFz2_Fanzor
     type: OMEGA
     subtype: Fanzor2
@@ -77,6 +87,16 @@ systems:
     rna_components: [omegaRNA]
     canonical_structures: []
     reference_doi: "10.1038/s41589-025-01902-7"
+
+  - name: enNlovFz2
+    type: OMEGA
+    subtype: Fanzor2_engineered
+    mechanism_bucket: DSB_NUCLEASE
+    proteins: []
+    rna_components: [omegaRNA]
+    canonical_structures: []
+    reference_doi: "10.1038/s41589-025-01902-7"
+    notes: "Engineered N. lovaniensis Fanzor2; enhanced human genome editing efficiency"
 
   - name: Cre_recombinase
     type: Tyrosine_recombinase

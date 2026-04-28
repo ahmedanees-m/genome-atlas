@@ -15,8 +15,8 @@ scenarios:
       edit_type: "insertion"
       cargo_size_bp: 500
       delivery: "AAV"
-    expected_top3: [SpuFz1_Fanzor, MmeFz2_Fanzor]
-    published_editor: SpuFz1_Fanzor
+    expected_top3: [SpuFz1_V4, enNlovFz2, SpuFz1_Fanzor]
+    published_editor: SpuFz1_V4
     reference: "Wei 2025 Nat Chem Biol"
 
   - name: "Large gene integration - CAR-T knockin"
@@ -95,6 +95,6 @@ scenarios:
       edit_type: "deletion"
       cargo_size_bp: 0
       delivery: "AAV"
-    expected_top3: [Cas12f, MmeFz2_Fanzor, SpuFz1_Fanzor]
+    expected_top3: [Cas12f, enNlovFz2, SpuFz1_V4]
     published_editor: Cas12f
     reference: "Kim 2022 Nat Biotechnol"

@@ -87,18 +87,32 @@ class SelectionEngine:
         else:
             # Default / moderate cargo
             if mech == "DSB_FREE_TRANSEST_RECOMBINASE":
-                s_dsb = 1.0
+                s_dsb = 0.85
                 reasoning.append("DSB-free mechanism")
             elif mech == "TRANSPOSASE":
                 s_dsb = 0.4
                 reasoning.append("Transposase: partial DSB via DDE")
+            elif mech == "DSB_NUCLEASE":
+                # C1: Cargo-tiered DSB penalty
+                if profile.edit_type == "insertion" and profile.cargo_size_bp <= 1000:
+                    s_dsb = 0.55
+                    reasoning.append("DSB nuclease acceptable for small-insert HDR")
+                elif profile.edit_type == "SNV":
+                    s_dsb = 0.60
+                    reasoning.append("DSB nuclease acceptable for precise SNV")
+                else:
+                    s_dsb = 0.20
+                    reasoning.append("DSB-dependent; host repair required")
             else:
-                s_dsb = 0.2
-                reasoning.append("DSB-nuclease; relies on host repair")
+                s_dsb = 0.3
 
         # ========== DELIVERY / AAV FIT ==========
         if profile.delivery == "AAV":
-            if total_aa <= 600:
+            # C3: Unknown size guard
+            if total_aa == 0:
+                s_aav = 0.1
+                reasoning.append("Size unknown; AAV compatibility uncertain")
+            elif total_aa <= 600:
                 s_aav = 1.0
                 reasoning.append(f"Ultra-compact ({total_aa} aa); ideal for AAV")
             elif total_aa <= 900:
@@ -117,7 +131,11 @@ class SelectionEngine:
             s_aav = 0.9  # mRNA/LNP are cargo-agnostic
 
         # ========== CARGO SIZE FIT ==========
-        if profile.edit_type == "insertion":
+        # C2: SNV-specific prime editor boost (handled first, before edit-type branching)
+        if profile.edit_type == "SNV" and "prime" in name_lower:
+            s_cargo = 1.0
+            reasoning.append("Prime editor: purpose-built for SNV correction")
+        elif profile.edit_type == "insertion":
             if "prime" in name_lower:
                 s_cargo = 1.0 if profile.cargo_size_bp <= 200 else 0.15
                 if s_cargo < 0.5:
@@ -142,7 +160,7 @@ class SelectionEngine:
             else:
                 s_cargo = 0.5
         else:
-            s_cargo = 0.9  # Deletions and SNVs are cargo-agnostic
+            s_cargo = 0.9  # Deletions and SNVs are cargo-agnostic (unless prime editor caught above)
 
         # ========== CELL TYPE COMPATIBILITY ==========
         s_cell = 0.5
