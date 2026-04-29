@@ -8,7 +8,7 @@
 #
 # Column order in results.m8 (set by --format-output below):
 #   query target fident alnlen mismatch gapopen qstart qend tstart tend evalue bits tmscore
-#   (tmscore is the TM-score from TMalign, range 0-1, >0.5 = same fold)
+#   (tmscore = structural TM-score from --alignment-type 1, range 0-1, >0.5 = same fold)
 
 set -euo pipefail
 
@@ -31,6 +31,7 @@ docker run --rm \
         /data/raw/pdb \
         /data/foldseek/results.m8 \
         /tmp/foldseek_tmp \
+        --alignment-type 1 \
         --format-output "query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,tmscore" \
         --tmscore-threshold 0.0 \
         --max-seqs 50 \

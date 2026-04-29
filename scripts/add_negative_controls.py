@@ -77,6 +77,7 @@ def main(duckdb_path, t1_path, t2_path, whitelist_path, n, seed):
     wl_filter_parts = [f"xref_pfam NOT LIKE '%{acc}%'" for acc in whitelist]
     wl_filter = " AND ".join(wl_filter_parts) if wl_filter_parts else "TRUE"
 
+    # DuckDB 0.10.x doesn't support REPEATABLE in USING SAMPLE — do Python-side sampling
     query = f"""
         SELECT accession, sequence, length, organism_id, protein_name, organism_name
         FROM read_parquet('{t1}')
@@ -85,7 +86,7 @@ def main(duckdb_path, t1_path, t2_path, whitelist_path, n, seed):
           AND sequence IS NOT NULL
           AND length BETWEEN 50 AND 2000
           AND (xref_pfam IS NULL OR ({wl_filter}))
-        USING SAMPLE {n * 5} ROWS REPEATABLE (42)
+        LIMIT {n * 20}
     """
     candidates = con.execute(query).fetchdf()
     print(f"  Candidate pool: {len(candidates)}")
