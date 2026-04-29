@@ -94,7 +94,19 @@ class HeteroGNN(nn.Module):
         }
 
         for i, conv in enumerate(self.convs):
+            # Keep a reference to the pre-conv features so that source-only
+            # node types (e.g. System, which never appears as an edge
+            # destination) survive into the next layer.  HeteroConv only
+            # populates its output dict for destination node types, so any
+            # node type that is exclusively a message *source* would
+            # otherwise be silently dropped, causing a NoneType error in
+            # the next conv layer.
+            prev_x = x_dict
             x_dict = conv(x_dict, edge_index_dict)
+            for nt, x in prev_x.items():
+                if nt not in x_dict:
+                    x_dict[nt] = x   # pass through unchanged
+
             is_last = i == self.num_layers - 1
             if not is_last:
                 x_dict = {k: F.relu(v) for k, v in x_dict.items()}
