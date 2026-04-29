@@ -57,7 +57,6 @@ scripts/debug_*.py
 scripts/connect_*.py
 scripts/sync_*.py
 scripts/install_*.sh
-scripts/*.sh
 
 # OS
 .DS_Store
