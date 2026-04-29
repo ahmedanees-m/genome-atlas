@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="genome-atlas",
-    version="0.5.1",
+    version="0.6.0",
     description="Programmable Genome-Writing Knowledge Graph (PEN-STACK Paper 1)",
     author="PEN-STACK Consortium",
     python_requires=">=3.10",
