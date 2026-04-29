@@ -77,19 +77,28 @@ def main(duckdb_path, t1_path, t2_path, whitelist_path, n, seed):
     wl_filter_parts = [f"xref_pfam NOT LIKE '%{acc}%'" for acc in whitelist]
     wl_filter = " AND ".join(wl_filter_parts) if wl_filter_parts else "TRUE"
 
-    # DuckDB 0.10.x doesn't support REPEATABLE in USING SAMPLE — do Python-side sampling
+    # Fetch a large pool of unreviewed proteins with no Pfam hits, then filter in Python.
+    # Avoid NOT IN (subquery) — it silently rejects all rows if subquery has NULLs.
+    # Instead, fetch candidate pool and filter accessions in Python.
     query = f"""
         SELECT accession, sequence, length, organism_id, protein_name, organism_name
         FROM read_parquet('{t1}')
-        WHERE accession NOT IN (SELECT accession FROM read_parquet('{t2}'))
-          AND reviewed = 'unreviewed'
+        WHERE reviewed = 'unreviewed'
           AND sequence IS NOT NULL
           AND length BETWEEN 50 AND 2000
-          AND (xref_pfam IS NULL OR ({wl_filter}))
-        LIMIT {n * 20}
+          AND xref_pfam IS NULL
+        LIMIT {n * 30}
     """
     candidates = con.execute(query).fetchdf()
-    print(f"  Candidate pool: {len(candidates)}")
+    print(f"  Candidate pool (pre-filter): {len(candidates)}")
+
+    # Python-side exclusion: remove proteins already in the atlas
+    t2_accs = {r[0] for r in con.execute(
+        f"SELECT accession FROM read_parquet('{t2}')"
+    ).fetchall()}
+    candidates = candidates[~candidates["accession"].isin(t2_accs)]
+    candidates = candidates[~candidates["accession"].isin(existing_accs)]
+    print(f"  After exclusion filter: {len(candidates)}")
 
     # Remove any already in nodes_protein
     candidates = candidates[~candidates["accession"].isin(existing_accs)]
