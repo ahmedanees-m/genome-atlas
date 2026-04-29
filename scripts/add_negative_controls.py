@@ -73,20 +73,22 @@ def main(duckdb_path, t1_path, t2_path, whitelist_path, n, seed):
     t2 = str(t2_path)
 
     # Build whitelist SQL filter: xref_pfam must not contain any whitelisted PF id
-    # xref_pfam is a VARCHAR like "PF00589;PF00216" or NULL
+    # xref_pfam is a VARCHAR like "PF00589;PF00216;" — never NULL in targets_v1
     wl_filter_parts = [f"xref_pfam NOT LIKE '%{acc}%'" for acc in whitelist]
     wl_filter = " AND ".join(wl_filter_parts) if wl_filter_parts else "TRUE"
 
-    # Fetch a large pool of unreviewed proteins with no Pfam hits, then filter in Python.
+    # Fetch a large pool of unreviewed proteins with no whitelisted Pfam domains.
+    # NOTE: xref_pfam is NEVER NULL in targets_v1 — every protein has Pfam annotations.
+    #       Do NOT filter xref_pfam IS NULL; use the whitelist LIKE filter instead.
     # Avoid NOT IN (subquery) — it silently rejects all rows if subquery has NULLs.
-    # Instead, fetch candidate pool and filter accessions in Python.
+    # Instead, fetch candidate pool and filter t2 accessions in Python.
     query = f"""
         SELECT accession, sequence, length, organism_id, protein_name, organism_name
         FROM read_parquet('{t1}')
         WHERE reviewed = 'unreviewed'
           AND sequence IS NOT NULL
           AND length BETWEEN 50 AND 2000
-          AND xref_pfam IS NULL
+          AND ({wl_filter})
         LIMIT {n * 30}
     """
     candidates = con.execute(query).fetchdf()
