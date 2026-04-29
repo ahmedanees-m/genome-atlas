@@ -65,32 +65,48 @@ def node2vec_probe(G, emb_map: dict, edge_type_key: str, seed: int = 42):
     Uses the same deterministic train/test split as train_gnn.py
     (add_train_val_test_split with seed=42, 80/10/10).
     Returns (y_true, y_score) arrays for the test split.
+
+    Negatives are sampled from the *correct node types* (src_type × dst_type)
+    to avoid the trivial-classification problem where the LR just learns
+    "is the destination a Domain node?" because most random cross-type pairs
+    are easy negatives.
     """
-    # Collect edges for this type
-    src_label, rel_label, dst_label = edge_type_key.split("_", 2)
-    # edge_type_key format: "Protein_HAS_DOMAIN_Domain" — split on first two _
+    # Parse node types from key: format is always SrcType_REL_DstType where
+    # SrcType and DstType are single words (Protein, Domain, Structure, …).
     parts = edge_type_key.split("_")
-    # node types can be single words; edge relation is the middle part(s)
-    # Use graph edge_type attribute to match
+    src_type = parts[0]   # first token = source node type
+    dst_type = parts[-1]  # last token  = destination node type
+
+    # Collect positive edges for this type using graph attributes
     edges = [
         (u, v) for u, v, d in G.edges(data=True)
-        if f"{G.nodes[u].get('node_type','?')}_{d.get('edge_type','?')}_{G.nodes[v].get('node_type','?')}" == edge_type_key
+        if (f"{G.nodes[u].get('node_type','?')}"
+            f"_{d.get('edge_type','?')}"
+            f"_{G.nodes[v].get('node_type','?')}") == edge_type_key
     ]
     if len(edges) < 20:
         return None, None
 
+    # Split: 80% train / 10% val (unused) / 10% test — matches
+    # add_train_val_test_split ordering so train/test sets are comparable
     rng = np.random.default_rng(seed)
     idx = rng.permutation(len(edges))
-    n_test = max(1, int(len(edges) * 0.1))
-    n_val  = max(1, int(len(edges) * 0.1))
-    test_idx  = idx[:n_test]
-    val_idx   = idx[n_test:n_test + n_val]
-    train_idx = idx[n_test + n_val:]
+    n_train = int(len(edges) * 0.8)
+    n_val   = int(len(edges) * 0.1)
+    train_idx = idx[:n_train]
+    test_idx  = idx[n_train + n_val:]
 
-    test_edges  = [edges[i] for i in test_idx]
     train_edges = [edges[i] for i in train_idx]
+    test_edges  = [edges[i] for i in test_idx]
 
-    all_nodes = list(G.nodes())
+    # Type-consistent node pools for negative sampling.
+    # Negatives are (src_type, dst_type) pairs not already connected,
+    # so the LR must learn embedding similarity — not just node type.
+    src_nodes = [n for n in G.nodes() if G.nodes[n].get("node_type") == src_type]
+    dst_nodes = [n for n in G.nodes() if G.nodes[n].get("node_type") == dst_type]
+    if not src_nodes or not dst_nodes:
+        return None, None
+
     dim = len(next(iter(emb_map.values())))
 
     def build_Xy(pos_edges, n_neg):
@@ -101,12 +117,11 @@ def node2vec_probe(G, emb_map: dict, edge_type_key: str, seed: int = 42):
             X.append(np.concatenate([eu, ev]))
             y.append(1)
         neg_rng = np.random.default_rng(seed + 1)
-        count = 0
-        attempts = 0
+        count, attempts = 0, 0
         while count < n_neg and attempts < n_neg * 200:
-            u = all_nodes[neg_rng.integers(len(all_nodes))]
-            v = all_nodes[neg_rng.integers(len(all_nodes))]
-            if u != v and not G.has_edge(u, v):
+            u = src_nodes[neg_rng.integers(len(src_nodes))]
+            v = dst_nodes[neg_rng.integers(len(dst_nodes))]
+            if not G.has_edge(u, v):
                 eu = np.array(emb_map.get(u, [0.0] * dim))
                 ev = np.array(emb_map.get(v, [0.0] * dim))
                 X.append(np.concatenate([eu, ev]))

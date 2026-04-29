@@ -71,10 +71,12 @@ class HeteroGNN(nn.Module):
             conv_dict: dict = {}
             for (src, rel, dst) in edge_types:
                 if model_type == "gat":
-                    # Single-head GAT; no self-loops (bipartite edges present)
+                    # 4-head GAT, heads averaged (concat=False) so output stays
+                    # out_ch wide.  Self-loops only for homogeneous edge types
+                    # (src == dst); bipartite edges cannot have self-loops.
                     conv_dict[(src, rel, dst)] = GATConv(
-                        in_ch, out_ch, heads=1, dropout=dropout,
-                        add_self_loops=False, concat=False,
+                        in_ch, out_ch, heads=4, dropout=dropout,
+                        add_self_loops=(src == dst), concat=False,
                     )
                 else:  # default: sage
                     conv_dict[(src, rel, dst)] = SAGEConv(in_ch, out_ch)
