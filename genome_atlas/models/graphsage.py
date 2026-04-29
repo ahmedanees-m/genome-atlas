@@ -35,7 +35,7 @@ class HeteroGNN(nn.Module):
         model_type:      ``'sage'`` for GraphSAGE, ``'gat'`` for GAT.
         num_layers:      Number of message-passing layers (default 2).
         in_features:     Input feature dimension; should match the ESM-2
-                         embedding size (default 480 for esm2_t30_150M).
+                         embedding size (640 for esm2_t30_150M_UR50D).
         dropout:         Dropout probability applied between layers.
     """
 
@@ -46,7 +46,7 @@ class HeteroGNN(nn.Module):
         out_channels: int = 128,
         model_type: str = "sage",
         num_layers: int = 2,
-        in_features: int = 480,
+        in_features: int = 640,
         dropout: float = 0.1,
     ) -> None:
         super().__init__()
