@@ -53,10 +53,14 @@ def main(duckdb_path, m8_path, min_tm, max_per_node):
     # Read m8 results
     # ------------------------------------------------------------------ #
     print(f"  Reading {m8_path} ...")
+    # Column layout from run_foldseek.sh --format-output (last col = qtmscore)
     cols = ["query", "target", "fident", "alnlen", "mismatch", "gapopen",
             "qstart", "qend", "tstart", "tend", "evalue", "bits", "tmscore"]
     df = pd.read_csv(str(m8_path), sep="\t", header=None, names=cols,
                      dtype={"tmscore": float})
+    # Foldseek outputs qtmscore as the last column; rename for clarity
+    if "tmscore" not in df.columns and "qtmscore" in df.columns:
+        df = df.rename(columns={"qtmscore": "tmscore"})
     print(f"  Raw hits               : {len(df):,}")
 
     # Normalise IDs
@@ -140,12 +144,11 @@ def main(duckdb_path, m8_path, min_tm, max_per_node):
 
 
 if __name__ == "__main__":
-    base = Path("/home/anees_22phd0670/pen-stack")
+    import os
+    _base = Path(os.environ.get("PENSTACK_DATA", "/data"))
     ap = argparse.ArgumentParser()
-    ap.add_argument("--duckdb",       type=Path,
-                    default=base / "data/graphs/atlas.duckdb")
-    ap.add_argument("--m8",           type=Path,
-                    default=base / "data/foldseek/results.m8")
+    ap.add_argument("--duckdb",       type=Path, default=_base / "graphs/atlas.duckdb")
+    ap.add_argument("--m8",           type=Path, default=_base / "foldseek/results.m8")
     ap.add_argument("--min-tm",       type=float, default=0.5)
     ap.add_argument("--max-per-node", type=int,   default=10)
     args = ap.parse_args()

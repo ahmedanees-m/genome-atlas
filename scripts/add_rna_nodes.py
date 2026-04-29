@@ -143,10 +143,10 @@ def main(duckdb_path: Path, yaml_path: Path):
 
 
 if __name__ == "__main__":
+    import os
+    _base = Path(os.environ.get("PENSTACK_DATA", "/data"))
     ap = argparse.ArgumentParser()
-    ap.add_argument("--duckdb", type=Path,
-                    default=Path("/home/anees_22phd0670/pen-stack/data/graphs/atlas.duckdb"))
-    ap.add_argument("--yaml",   type=Path,
-                    default=Path("genome_atlas/data/foundational_systems.yaml"))
+    ap.add_argument("--duckdb", type=Path, default=_base / "graphs/atlas.duckdb")
+    ap.add_argument("--yaml",   type=Path, default=Path("genome_atlas/data/foundational_systems.yaml"))
     args = ap.parse_args()
     main(args.duckdb, args.yaml)

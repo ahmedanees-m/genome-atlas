@@ -226,14 +226,17 @@ def main(duckdb_path, t1_path, t2_path, whitelist_path, n, seed):
 
 
 if __name__ == "__main__":
-    base = Path("/home/anees_22phd0670/pen-stack")
+    # Default paths work both on VM directly and inside Docker
+    # (Docker mounts ~/pen-stack/data -> /data)
+    import os
+    _base = Path(os.environ.get("PENSTACK_DATA", "/data"))
     ap = argparse.ArgumentParser()
     ap.add_argument("--duckdb",     type=Path,
-                    default=base / "data/graphs/atlas.duckdb")
+                    default=_base / "graphs/atlas.duckdb")
     ap.add_argument("--targets-v1", type=Path,
-                    default=base / "data/processed/targets_v1.parquet")
+                    default=_base / "processed/targets_v1.parquet")
     ap.add_argument("--targets-v2", type=Path,
-                    default=base / "data/processed/targets_v2.parquet")
+                    default=_base / "processed/targets_v2.parquet")
     ap.add_argument("--whitelist",  type=Path,
                     default=Path("genome_atlas/data/pfam_whitelist.yaml"))
     ap.add_argument("--n",    type=int, default=500)

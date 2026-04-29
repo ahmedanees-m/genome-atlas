@@ -7,8 +7,8 @@
 # Runtime: ~30-60 min on 24-core VM for 2,284 PDB structures
 #
 # Column order in results.m8 (set by --format-output below):
-#   query target fident alnlen mismatch gapopen qstart qend tstart tend evalue bits tmscore
-#   (tmscore = structural TM-score from --alignment-type 1, range 0-1, >0.5 = same fold)
+#   query target fident alnlen mismatch gapopen qstart qend tstart tend evalue bits qtmscore
+#   (qtmscore = TM-score normalised by query length, range 0-1, >0.5 = same fold)
 
 set -euo pipefail
 
@@ -32,7 +32,7 @@ docker run --rm \
         /data/foldseek/results.m8 \
         /tmp/foldseek_tmp \
         --alignment-type 1 \
-        --format-output "query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,tmscore" \
+        --format-output "query,target,fident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,qtmscore" \
         --tmscore-threshold 0.0 \
         --max-seqs 50 \
         --threads 20 \
