@@ -17,11 +17,32 @@ from torch_geometric.data import HeteroData
 def build_pyg_hetero(gpickle_path: Path, esm_emb_path: Path) -> HeteroData:
     """Build a PyG HeteroData object from the atlas gpickle and ESM-2 embeddings.
 
-    Node features:
-      - Protein nodes: 480-dim ESM-2 mean-pooled embeddings (or zeros if missing).
-      - All other node types: zero vectors of the same dimension.
+    Node features
+    -------------
+    - **Protein** nodes: ``emb_dim``-dimensional ESM-2 mean-pooled embeddings
+      (640-dim for ``esm2_t30_150M_UR50D``).  Rows with no matching accession
+      default to zeros.
+    - **All other node types** (Domain, Structure, Mechanism, RNA, System):
+      zero vectors of the same ``emb_dim``.  This is intentional:
 
-    Edge representation: one (src_type, edge_label, dst_type) entry per
+      * *Domain* and *Mechanism* are purely topological — they function as
+        destination-only aggregation targets and acquire meaningful
+        representations through message passing from Protein nodes.
+      * *Structure* nodes are sources in ``STRUCTURE_OF`` and ``SIMILAR_TO``
+        edges.  In layer 1 they contribute a constant (bias-only) signal; by
+        layer 2 ``SIMILAR_TO`` updates give them structural neighbourhood
+        context.  This is acceptable for the primary Protein→Domain benchmark.
+      * *RNA* nodes are destination-only (``System→RNA``); their zero
+        features never propagate to other node types.  RNA sequence features
+        will be incorporated in a future release via a nucleic-acid language
+        model (e.g. RNA-FM).
+      * *System* nodes connect sparsely (9 ``HAS_PROTEIN`` edges) — their
+        contribution to Protein representations is negligible.
+
+    The embedding dimension is inferred automatically from the ESM-2 parquet,
+    so the function works with any ESM-2 variant (35 M → 640 M).
+
+    Edge representation: one ``(src_type, edge_label, dst_type)`` entry per
     directed edge type found in the NetworkX graph.
 
     Each node type stores a ``node_ids`` attribute (list of NetworkX node ID
@@ -29,12 +50,14 @@ def build_pyg_hetero(gpickle_path: Path, esm_emb_path: Path) -> HeteroData:
     can be matched back to graph nodes after training.
 
     Args:
-        gpickle_path: Path to atlas.gpickle (NetworkX MultiDiGraph).
+        gpickle_path: Path to atlas_train.gpickle (NetworkX DiGraph,
+            isolated nodes already removed by create_train_gpickle.py).
         esm_emb_path: Path to ESM-2 parquet with columns
-            ['accession', 'embedding', 'seq_length'].
+            ``['accession', 'embedding']``.
 
     Returns:
-        PyG HeteroData ready for training (no train/val/test masks yet).
+        PyG HeteroData ready for training (no train/val/test masks yet;
+        call :func:`add_train_val_test_split` before training).
     """
     # ------------------------------------------------------------------ #
     # Load graph
