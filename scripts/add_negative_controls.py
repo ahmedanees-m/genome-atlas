@@ -1,9 +1,12 @@
 """Add 500 negative-control proteins to the atlas DuckDB.
 
 Selects 500 random unreviewed proteins from targets_v1 that are:
-  - NOT in targets_v2 (not a genome-editing enzyme)
-  - Have no Pfam accession overlap with the whitelist (filtered by xref_pfam IS NULL
-    or containing no whitelisted domain prefix — simplified: no PF00 from whitelist)
+  - NOT in targets_v2 (not a characterized genome-editing enzyme)
+
+These are "hard negatives" — proteins that share domain families with
+genome editors (targets_v1 is a Pfam-domain-filtered set) but have not
+been characterized as genome-editing enzymes. Hard negatives are more
+informative for ML training than unrelated proteins.
 
 Each negative control gets a USES_MECHANISM edge to a new NEGATIVE_CONTROL mechanism
 node (id=4). Organisms not already in nodes_organism are inserted.
@@ -15,45 +18,18 @@ Usage (on VM):
         --duckdb    /home/.../atlas.duckdb \
         --targets-v1 /home/.../processed/targets_v1.parquet \
         --targets-v2 /home/.../processed/targets_v2.parquet \
-        --whitelist  genome_atlas/data/pfam_whitelist.yaml \
         --n 500 --seed 42
 """
 import argparse
-import random
 from pathlib import Path
 
 import duckdb
-import yaml
 
 
-def load_whitelist_accessions(yaml_path: Path) -> set:
-    """Extract PF accessions from pfam_whitelist.yaml.
-
-    Handles both the current layout (top-level 'domains' / 'auxiliary' lists
-    of dicts with 'accession' keys) and older flat-list layouts.
-    """
-    cfg = yaml.safe_load(yaml_path.read_text())
-    accs = set()
-    # Current layout: 'domains' + 'auxiliary' sections
-    for section in ("domains", "auxiliary", "primary_domains", "auxiliary_domains"):
-        entries = cfg.get(section, [])
-        if not isinstance(entries, list):
-            continue
-        for entry in entries:
-            if isinstance(entry, dict) and "accession" in entry:
-                accs.add(entry["accession"])
-            elif isinstance(entry, str) and entry.startswith("PF"):
-                accs.add(entry)
-    return accs
-
-
-def main(duckdb_path, t1_path, t2_path, whitelist_path, n, seed):
+def main(duckdb_path, t1_path, t2_path, n, seed):
     print("=" * 60)
     print("Negative Controls Addition")
     print("=" * 60)
-
-    whitelist = load_whitelist_accessions(whitelist_path)
-    print(f"  Whitelist domains: {len(whitelist)}")
 
     con = duckdb.connect(str(duckdb_path))
 
@@ -68,33 +44,31 @@ def main(duckdb_path, t1_path, t2_path, whitelist_path, n, seed):
     # ------------------------------------------------------------------ #
     # 2. Sample negatives from targets_v1 \ targets_v2
     # ------------------------------------------------------------------ #
-    print(f"  Sampling {n} negatives (seed={seed}) from targets_v1 \\ targets_v2 ...")
+    # targets_v1 is a Pfam-domain-filtered set — every protein has at least one
+    # whitelisted genome-editing Pfam domain by construction. Attempting to filter
+    # for xref_pfam IS NULL or applying a NOT LIKE whitelist filter returns 0 rows.
+    # Instead, use "hard negatives": unreviewed proteins from targets_v1 that are
+    # NOT in targets_v2 (the confirmed genome editors). Hard negatives share domain
+    # families with genome editors but are not characterized as such — more
+    # informative for ML training than structurally unrelated proteins.
+    print(f"  Sampling {n} hard negatives (seed={seed}) from targets_v1 \\ targets_v2 ...")
     t1 = str(t1_path)
     t2 = str(t2_path)
 
-    # Build whitelist SQL filter: xref_pfam must not contain any whitelisted PF id
-    # xref_pfam is a VARCHAR like "PF00589;PF00216;" — never NULL in targets_v1
-    wl_filter_parts = [f"xref_pfam NOT LIKE '%{acc}%'" for acc in whitelist]
-    wl_filter = " AND ".join(wl_filter_parts) if wl_filter_parts else "TRUE"
-
-    # Fetch a large pool of unreviewed proteins with no whitelisted Pfam domains.
-    # NOTE: xref_pfam is NEVER NULL in targets_v1 — every protein has Pfam annotations.
-    #       Do NOT filter xref_pfam IS NULL; use the whitelist LIKE filter instead.
-    # Avoid NOT IN (subquery) — it silently rejects all rows if subquery has NULLs.
-    # Instead, fetch candidate pool and filter t2 accessions in Python.
+    # Fetch a large pool of unreviewed proteins; filter t2 and existing in Python.
+    # Avoid NOT IN (subquery) — silently returns NULL if subquery has any NULLs.
     query = f"""
         SELECT accession, sequence, length, organism_id, protein_name, organism_name
         FROM read_parquet('{t1}')
         WHERE reviewed = 'unreviewed'
           AND sequence IS NOT NULL
           AND length BETWEEN 50 AND 2000
-          AND ({wl_filter})
         LIMIT {n * 30}
     """
     candidates = con.execute(query).fetchdf()
     print(f"  Candidate pool (pre-filter): {len(candidates)}")
 
-    # Python-side exclusion: remove proteins already in the atlas
+    # Python-side exclusion: remove confirmed genome editors and already-ingested proteins
     t2_accs = {r[0] for r in con.execute(
         f"SELECT accession FROM read_parquet('{t2}')"
     ).fetchall()}
@@ -102,10 +76,7 @@ def main(duckdb_path, t1_path, t2_path, whitelist_path, n, seed):
     candidates = candidates[~candidates["accession"].isin(existing_accs)]
     print(f"  After exclusion filter: {len(candidates)}")
 
-    # Remove any already in nodes_protein
-    candidates = candidates[~candidates["accession"].isin(existing_accs)]
     # Deterministic shuffle and take n
-    rng = random.Random(seed)
     candidates = candidates.sample(n=min(n, len(candidates)), random_state=seed)
     print(f"  Final negatives selected: {len(candidates)}")
 
@@ -248,10 +219,8 @@ if __name__ == "__main__":
                     default=_base / "processed/targets_v1.parquet")
     ap.add_argument("--targets-v2", type=Path,
                     default=_base / "processed/targets_v2.parquet")
-    ap.add_argument("--whitelist",  type=Path,
-                    default=Path("genome_atlas/data/pfam_whitelist.yaml"))
     ap.add_argument("--n",    type=int, default=500)
     ap.add_argument("--seed", type=int, default=42)
     args = ap.parse_args()
     main(args.duckdb, args.targets_v1, args.targets_v2,
-         args.whitelist, args.n, args.seed)
+         args.n, args.seed)
