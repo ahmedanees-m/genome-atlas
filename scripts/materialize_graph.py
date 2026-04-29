@@ -19,17 +19,24 @@ def materialize(duckdb_path: Path, output_path: Path):
 
     # --- Nodes ---
     node_tables = [
-        ("System", "nodes_system", ["name", "type", "subtype", "mechanism_bucket"]),
-        ("Protein", "nodes_protein", ["accession", "sequence", "length", "organism_id", "reviewed", "protein_name"]),
-        ("Domain", "nodes_domain", ["accession", "name", "source", "mechanism_bucket"]),
+        ("System",    "nodes_system",    ["name", "type", "subtype", "mechanism_bucket"]),
+        ("Protein",   "nodes_protein",   ["accession", "sequence", "length", "organism_id", "reviewed", "protein_name"]),
+        ("Domain",    "nodes_domain",    ["accession", "name", "source", "mechanism_bucket"]),
         ("Structure", "nodes_structure", ["accession", "source", "method", "resolution_A", "mean_plddt"]),
         ("Mechanism", "nodes_mechanism", ["name", "bucket", "chemistry", "requires_host_repair"]),
-        ("Organism", "nodes_organism", ["ncbi_taxon_id", "scientific_name", "lineage"]),
+        ("Organism",  "nodes_organism",  ["ncbi_taxon_id", "scientific_name", "lineage"]),
+        # RNA nodes (added in v0.6.0 — table may not exist in older DBs)
+        ("RNA",       "nodes_rna",       ["name", "rna_type", "length_nt"]),
     ]
 
     total_nodes = 0
     for node_type, table, attrs in node_tables:
-        df = con.execute(f"SELECT * FROM {table}").fetchdf()
+        # nodes_rna may not exist in databases built before v0.6.0
+        try:
+            df = con.execute(f"SELECT * FROM {table}").fetchdf()
+        except duckdb.CatalogException:
+            print(f"  Nodes [{node_type}]: table '{table}' not found — skipping")
+            continue
         for _, row in df.iterrows():
             node_id = f"{node_type}_{int(row['id'])}"
             data = {"node_type": node_type}

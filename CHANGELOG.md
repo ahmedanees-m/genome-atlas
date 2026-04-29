@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-04-29
+
+### Added
+
+- **RNA nodes** (`nodes_rna` table): 6 guide/scaffold RNA types — `sgRNA`, `crRNA`, `tracrRNA`, `bridge_RNA`, `omegaRNA`, `pegRNA` — added to `foundational_systems.yaml` with length and provenance metadata.
+- **`HAS_RNA` edges**: `System → RNA` edges automatically wired from YAML `rna_components` field (14 edges across 10 RNA-guided systems).
+- **Negative control proteins**: `scripts/add_negative_controls.py` samples 500 random unreviewed TrEMBL proteins (no whitelisted Pfam domain) and adds them as a fourth mechanism bucket (`NEGATIVE_CONTROL`) for specificity validation in UMAP and benchmarks.
+- **Structural similarity edges** (`SIMILAR_TO`): `scripts/run_foldseek.sh` runs Foldseek all-vs-all on 2,284 PDB structures; `scripts/add_structural_edges.py` ingests TM-score ≥ 0.5 hits (top-10 per node) as weighted `Structure → Structure` edges.
+- **API methods**: `rna_guides_of_system(name)` returns RNA nodes for a system; `structurally_similar(accession, top_k)` returns structurally homologous proteins via SIMILAR_TO edges and TM-score ranking.
+- **`materialize_graph.py`**: gracefully handles missing `nodes_rna` table for backwards compatibility with pre-v0.6.0 databases.
+
+### Changed
+
+- `genome_atlas/data/foundational_systems.yaml`: added `rnas:` section documenting all 6 RNA types.
+- `.gitignore`: added `logs/`, `*.log`, and one-off `scripts/vm_*`, `scripts/check_*` patterns.
+
 ## [0.5.2] - 2026-04-28
 
 ### Fixed

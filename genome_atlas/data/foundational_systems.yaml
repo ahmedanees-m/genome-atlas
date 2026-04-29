@@ -154,3 +154,37 @@ systems:
     canonical_structures: []
     reference_doi: "10.1126/science.aax9181"
     notes: "Tn7-family CAST machinery"
+
+# RNA guide/scaffold components for the systems above.
+# Each entry becomes an RNA node. The 'name' must match entries in rna_components
+# lists above so that HAS_RNA edges can be built automatically.
+rnas:
+  - name: sgRNA
+    rna_type: guide_RNA
+    length_nt: 100
+    notes: "Single guide RNA; fused crRNA+tracrRNA; used by Cas9 variants and V-K CAST"
+
+  - name: crRNA
+    rna_type: guide_RNA
+    length_nt: 42
+    notes: "CRISPR RNA; processed spacer+repeat; used by Cas12a/f, CAST I-F, TnsABC"
+
+  - name: tracrRNA
+    rna_type: scaffold_RNA
+    length_nt: 67
+    notes: "Trans-activating crRNA; base-pairs with crRNA repeat; required by Cas12f"
+
+  - name: bridge_RNA
+    rna_type: guide_RNA
+    length_nt: 35
+    notes: "Two-tethered-loop RNA; guides IS110 bridge recombinase; Durrant 2024"
+
+  - name: omegaRNA
+    rna_type: guide_RNA
+    length_nt: 400
+    notes: "Omega RNA; guides Fanzor endonucleases; eukaryotic system"
+
+  - name: pegRNA
+    rna_type: guide_RNA
+    length_nt: 120
+    notes: "Prime editing guide RNA; spacer + PBS + RT template; used by PE2"

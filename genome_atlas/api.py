@@ -49,6 +49,7 @@ class Atlas:
         self._system_by_name: dict[str, str] = {}
         self._domain_by_accession: dict[str, str] = {}
         self._protein_by_accession: dict[str, str] = {}
+        self._rna_by_name: dict[str, str] = {}        # v0.6.0
 
         if targets_path and targets_path.exists():
             targets = pd.read_parquet(targets_path, columns=["accession", "length", "protein_name", "organism_name"])
@@ -79,6 +80,8 @@ class Atlas:
                     self._domain_by_accession[d["accession"]] = n
                 elif nt == "Protein" and "accession" in d:
                     self._protein_by_accession[d["accession"]] = n
+                elif nt == "RNA" and "name" in d:
+                    self._rna_by_name[d["name"]] = n
 
         if embeddings_path and embeddings_path.exists():
             self._embeddings = pd.read_parquet(embeddings_path).set_index("node_id")
@@ -155,6 +158,61 @@ class Atlas:
             if edge_data.get("edge_type") == "HAS_DOMAIN" and u == protein_node:
                 domains.append({"node_id": v, **self._G.nodes[v]})
         return pd.DataFrame(domains)
+
+    def rna_guides_of_system(self, name: str) -> pd.DataFrame:
+        """Return RNA guide/scaffold nodes for a given system.
+
+        Example::
+            >>> atlas.rna_guides_of_system("SpCas9")
+               node_id      name    rna_type  length_nt
+            0  RNA_1    sgRNA   guide_RNA       100
+        """
+        if self._G is None:
+            raise RuntimeError("Graph not loaded")
+        sys_node = self._resolve_node("System", name, self._system_by_name)
+        if sys_node is None or sys_node not in self._G:
+            raise KeyError(f"System '{name}' not found")
+        rnas = []
+        for u, v, edge_data in self._G.edges(data=True):
+            if edge_data.get("edge_type") == "HAS_RNA" and u == sys_node:
+                rnas.append({"node_id": v, **self._G.nodes[v]})
+        return pd.DataFrame(rnas)
+
+    def structurally_similar(self, accession: str,
+                             top_k: int = 5) -> pd.DataFrame:
+        """Return structures similar to those of a given protein (via SIMILAR_TO edges).
+
+        Returns a DataFrame of Structure nodes sorted by TM-score descending.
+
+        Example::
+            >>> atlas.structurally_similar("Q99ZW2", top_k=3)
+        """
+        if self._G is None:
+            raise RuntimeError("Graph not loaded")
+        protein_node = self._resolve_node("Protein", accession, self._protein_by_accession)
+        if protein_node is None or protein_node not in self._G:
+            raise KeyError(f"Protein '{accession}' not found")
+
+        # Collect Structure nodes for this protein
+        struct_nodes = [
+            v for u, v, d in self._G.edges(data=True)
+            if d.get("edge_type") == "STRUCTURE_OF" and u == protein_node
+        ]
+
+        hits = []
+        for s_node in struct_nodes:
+            for u, v, d in self._G.edges(data=True):
+                if d.get("edge_type") == "SIMILAR_TO" and u == s_node:
+                    hits.append({
+                        "node_id": v,
+                        "tmscore": d.get("weight", 0.0),
+                        **self._G.nodes[v],
+                    })
+
+        if not hits:
+            return pd.DataFrame()
+        df = pd.DataFrame(hits).drop_duplicates("node_id")
+        return df.sort_values("tmscore", ascending=False).head(top_k).reset_index(drop=True)
 
     def structures_of_protein(self, accession: str) -> pd.DataFrame:
         """Return structures (PDB / AlphaFold) of a given protein."""
