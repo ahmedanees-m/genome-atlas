@@ -102,7 +102,7 @@ genome-atlas --help
 
 ## Benchmark Results (v0.6.0)
 
-**Task**: Protein→Domain (`HAS_DOMAIN`) link prediction, 20% hold-out test set.
+**Task**: Protein→Domain (`HAS_DOMAIN`) link prediction, 10% hold-out test set (20% combined val+test).
 **Split**: 80/10/10 train/val/test per edge type, seed=42, applied per edge type independently.
 **Test size**: n=1908 per model (positive + matched negatives; type-consistent negative sampling).
 **CIs**: 1000× bootstrap resampling on held-out test predictions (seed=42).
@@ -207,7 +207,7 @@ genome-atlas/
 
 ## Docker Images
 
-All training steps run inside Docker on the VM (GPU: NVIDIA V100 16.7 GB, host: 10.30.158.35).
+All training steps run inside Docker on the training VM (GPU: NVIDIA V100 16.7 GB).
 
 | Image | Purpose | Key packages |
 |-------|---------|--------------|
@@ -326,7 +326,7 @@ The unit test suite passes locally without any VM data. Integration and regressi
 
 1. **GNNs are statistically tied**: GraphSAGE (AUROC 0.9707) and GAT (AUROC 0.9685) have overlapping 95% bootstrap CIs (delta = 0.0022). Neither is definitively superior; both achieve high link-prediction performance on the Protein→Domain task.
 
-2. **ESM-2 features drive GNN performance**: Node2Vec (inductive, topology only) achieves AUROC 0.9867 without protein sequence features. The GNNs combine ESM-2 640-dim embeddings with message passing — the topology alone is highly informative for this task.
+2. **Graph topology is the dominant signal**: Node2Vec (inductive, topology only, AUROC 0.9867) outperforms GNNs that use ESM-2 sequence embeddings (GraphSAGE 0.9707, GAT 0.9685). For Protein→Domain prediction on this graph, the connectivity structure is more informative than sequence features alone. ESM-2 embeddings provide complementary signal within the GNN message-passing framework but do not surpass the topology-only baseline.
 
 3. **Transductive Node2Vec is inflated**: Node2Vec with full-graph random walks (AUROC 0.9965) is not comparable to inductive GNN results because test edges participate in training. It serves only as a topology upper-bound in supplementary material.
 
@@ -337,16 +337,6 @@ The unit test suite passes locally without any VM data. Integration and regressi
 ---
 
 ## Citation
-
-```bibtex
-@software{ahmed2026genome_atlas,
-  author    = {Ahmed, Anees},
-  title     = {{GENOME-ATLAS}: A unified knowledge graph for programmable genome-writing enzymes},
-  year      = {2026},
-  publisher = {GitHub},
-  url       = {https://github.com/ahmedanees-m/genome-atlas},
-}
-```
 
 See [CITATION.cff](CITATION.cff) for the machine-readable citation. Preprint forthcoming on bioRxiv.
 

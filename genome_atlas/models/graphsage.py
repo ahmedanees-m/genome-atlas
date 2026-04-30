@@ -18,7 +18,7 @@ class HeteroGNN(nn.Module):
     Architecture
     ------------
     1. Linear input projection: maps every node type from ``in_features``
-       (ESM-2 dimension, typically 480) to ``hidden_channels``.  Using a
+       (ESM-2 dimension, typically 640 for esm2_t30_150M_UR50D) to ``hidden_channels``.  Using a
        shared projection keeps the interface clean when non-Protein nodes
        have zero features.
     2. ``num_layers`` HeteroConv layers, each wrapping either SAGEConv
