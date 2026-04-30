@@ -1,9 +1,0 @@
-cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
-type: software
-title: "GENOME-ATLAS: A unified knowledge graph for programmable genome-writing enzymes"
-authors:
-  - family-names: Ahmed
-    given-names: Anees
-repository-code: "https://github.com/ahmedanees-m/genome-atlas"
-license: MIT

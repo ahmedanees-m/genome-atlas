@@ -239,7 +239,6 @@ genome-atlas/
 ├── pyproject.toml
 ├── setup.py
 ├── CHANGELOG.md
-├── CITATION.cff
 └── LICENSE
 ```
 
@@ -373,12 +372,6 @@ The unit test suite passes locally without any VM data. Integration and regressi
 4. **GAT residual connections prevent embedding collapse**: Without residual connections, GAT produces only 4 unique embeddings across 10,000 Protein nodes because most nodes receive zero messages from their System neighbours. The residual (`x_dict[nt] = new_x[nt] + x`) restores ESM-2 diversity. GraphSAGE does not require this fix (self-features are concatenated internally by SAGEConv).
 
 5. **Selection accuracy is 70% top-3 on 10 published scenarios**: `select_editor()` correctly ranks the published editor in the top 3 for 7/10 therapeutic use cases from the peer-reviewed literature. The three misses reveal specific heuristic boundaries — DSB penalisation for moderate AAV cargo, inability to distinguish wild-type from PACE-evolved CAST, and conflation of edit precision with editor component size. See [VALIDATION.md](VALIDATION.md).
-
----
-
-## Citation
-
-See [CITATION.cff](CITATION.cff) for the machine-readable citation. Preprint forthcoming on bioRxiv.
 
 ---
 
