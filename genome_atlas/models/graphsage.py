@@ -96,18 +96,29 @@ class HeteroGNN(nn.Module):
         }
 
         for i, conv in enumerate(self.convs):
-            # Keep a reference to the pre-conv features so that source-only
-            # node types (e.g. System, which never appears as an edge
-            # destination) survive into the next layer.  HeteroConv only
-            # populates its output dict for destination node types, so any
-            # node type that is exclusively a message *source* would
-            # otherwise be silently dropped, causing a NoneType error in
-            # the next conv layer.
+            # Keep a reference to the pre-conv features for two reasons:
+            # 1. Source-only node types (e.g. System, which never appears as
+            #    an edge destination) are dropped by HeteroConv — pass them
+            #    through unchanged to avoid NoneType errors in the next layer.
+            # 2. GAT residual: GATConv (bipartite, no self-loops) returns
+            #    zeros for any destination node that has *no* incoming edges.
+            #    On this graph, 9,991/10,000 Protein nodes have zero System
+            #    neighbours, so their layer-1 output is a zero vector and
+            #    the ESM-2 diversity loaded by lin_in is completely lost →
+            #    embedding collapse (4 unique/10 k).  Adding back the input
+            #    features (residual) restores that diversity.  The fix is
+            #    applied only for GAT; SAGEConv already concatenates self-
+            #    features internally and does not need it.
             prev_x = x_dict
-            x_dict = conv(x_dict, edge_index_dict)
+            new_x  = conv(x_dict, edge_index_dict)
+            x_dict = {}
             for nt, x in prev_x.items():
-                if nt not in x_dict:
-                    x_dict[nt] = x   # pass through unchanged
+                if nt not in new_x:
+                    x_dict[nt] = x                         # source-only passthrough
+                elif self.model_type == "gat":
+                    x_dict[nt] = new_x[nt] + x             # GAT residual: preserve input
+                else:
+                    x_dict[nt] = new_x[nt]                 # SAGE: no residual needed
 
             is_last = i == self.num_layers - 1
             if not is_last:
