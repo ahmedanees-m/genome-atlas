@@ -54,8 +54,18 @@ def bootstrap_ci(y_true: np.ndarray, y_score: np.ndarray,
     return float(np.mean(arr)), float(np.percentile(arr, 2.5)), float(np.percentile(arr, 97.5))
 
 
-def build_Xy(pos_edges, src_nodes, dst_nodes, emb_map, dim, rng_seed):
-    """Build (X, y) from positive edges + type-consistent negatives."""
+def build_Xy(pos_edges, src_nodes, dst_nodes, emb_map, dim, rng_seed, G):
+    """Build (X, y) from positive edges + type-consistent negatives.
+
+    Args:
+        pos_edges:  List of (u, v) positive pairs.
+        src_nodes:  All nodes of the source type (for negative sampling).
+        dst_nodes:  All nodes of the destination type.
+        emb_map:    {node_id: embedding_array}.
+        dim:        Embedding dimension (used for missing-node fallback).
+        rng_seed:   RNG seed for reproducible negative sampling.
+        G:          Full NetworkX graph (used to exclude existing edges from negatives).
+    """
     X, y = [], []
     for u, v in pos_edges:
         eu = np.array(emb_map.get(u, [0.0] * dim))
@@ -68,7 +78,7 @@ def build_Xy(pos_edges, src_nodes, dst_nodes, emb_map, dim, rng_seed):
     while count < n_neg and attempts < n_neg * 300:
         u = src_nodes[neg_rng.integers(len(src_nodes))]
         v = dst_nodes[neg_rng.integers(len(dst_nodes))]
-        if not G_global.has_edge(u, v):
+        if not G.has_edge(u, v):
             eu = np.array(emb_map.get(u, [0.0] * dim))
             ev = np.array(emb_map.get(v, [0.0] * dim))
             X.append(np.concatenate([eu, ev]))
@@ -78,16 +88,11 @@ def build_Xy(pos_edges, src_nodes, dst_nodes, emb_map, dim, rng_seed):
     return np.array(X, dtype=np.float64), np.array(y, dtype=np.int32)
 
 
-G_global = None   # set in main so build_Xy can check G.has_edge
-
-
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main():
-    global G_global
-
     p = argparse.ArgumentParser()
     p.add_argument("--graph",          type=Path, required=True)
     p.add_argument("--esm-embeddings", type=Path, required=True)
@@ -104,8 +109,8 @@ def main():
     # ------------------------------------------------------------------ #
     print("Loading graph...")
     with open(args.graph, "rb") as f:
-        G_global = pickle.load(f)
-    print(f"  {G_global.number_of_nodes():,} nodes, {G_global.number_of_edges():,} edges")
+        G = pickle.load(f)
+    print(f"  {G.number_of_nodes():,} nodes, {G.number_of_edges():,} edges")
 
     # ------------------------------------------------------------------ #
     # Build PyG graph → get EXACT same train/test split as train_gnn.py
@@ -133,9 +138,9 @@ def main():
     # Build train-only NetworkX graph
     # ------------------------------------------------------------------ #
     G_train = nx.DiGraph()
-    G_train.add_nodes_from(G_global.nodes(data=True))
+    G_train.add_nodes_from(G.nodes(data=True))
     kept = skipped = 0
-    for u, v, d in G_global.edges(data=True):
+    for u, v, d in G.edges(data=True):
         if (u, v) in withheld:
             skipped += 1
         else:
@@ -189,15 +194,15 @@ def main():
                      for s, d in zip(train_ei[0].tolist(), train_ei[1].tolist())]
 
         # Type-consistent node pools for negative sampling
-        src_nodes = [n for n in G_global.nodes()
-                     if G_global.nodes[n].get("node_type") == src_type]
-        dst_nodes = [n for n in G_global.nodes()
-                     if G_global.nodes[n].get("node_type") == dst_type]
+        src_nodes = [n for n in G.nodes()
+                     if G.nodes[n].get("node_type") == src_type]
+        dst_nodes = [n for n in G.nodes()
+                     if G.nodes[n].get("node_type") == dst_type]
         if not src_nodes or not dst_nodes:
             continue
 
-        X_tr, y_tr = build_Xy(train_pos, src_nodes, dst_nodes, emb_map, dim, rng_seed=42)
-        X_te, y_te = build_Xy(test_pos,  src_nodes, dst_nodes, emb_map, dim, rng_seed=43)
+        X_tr, y_tr = build_Xy(train_pos, src_nodes, dst_nodes, emb_map, dim, rng_seed=42, G=G)
+        X_te, y_te = build_Xy(test_pos,  src_nodes, dst_nodes, emb_map, dim, rng_seed=43, G=G)
 
         if len(np.unique(y_tr)) < 2 or len(np.unique(y_te)) < 2:
             print(f"  {et_str}: skipped (single class in train or test)")

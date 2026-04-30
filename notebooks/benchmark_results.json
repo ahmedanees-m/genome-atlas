@@ -1,33 +1,68 @@
 {
-  "node2vec": {
-    "auroc": 0.8410897161336213,
-    "auprc": 0.8904635137090064,
-    "ci_lo": 0.8052207849144436,
-    "ci_hi": 0.8341892972538144,
-    "ci_method": "bootstrap_1000x_test_set"
-  },
+  "_version": "0.6.0",
+  "_pipeline": "pipeline_v6.sh",
+  "_task": "Protein_HAS_DOMAIN_Domain link prediction, 20% hold-out, seed=42",
+  "_ci_method": "bootstrap_1000x_test_set_seed42",
+  "_n_test": 1908,
+  "_negative_sampling": "type_consistent (Protein x Domain pool)",
+  "_note": "GNNs are statistically tied (delta=0.0022, overlapping 95% CIs [0.9618, 0.9771]). Node2Vec excluded from primary benchmark — see supplementary.",
   "graphsage": {
-    "auroc": 0.9663926475073469,
-    "auprc": 0.918402988767943,
-    "ci_lo": 0.9405,
-    "ci_hi": 0.9923,
-    "ci_method": "mann_whitney_se"
+    "auroc": 0.9707,
+    "auprc": 0.9456,
+    "ci_lo": 0.9618,
+    "ci_hi": 0.9790,
+    "ci_method": "bootstrap_1000x_test_set_seed42",
+    "model_type": "inductive_gnn",
+    "epochs": 100,
+    "lr": 0.001,
+    "hidden_channels": 128,
+    "out_channels": 128,
+    "dropout": 0.1
   },
   "gat": {
-    "auroc": 0.970457240569076,
-    "auprc": 0.9420585423128657,
-    "ci_lo": 0.9446,
-    "ci_hi": 0.9964,
-    "ci_method": "mann_whitney_se"
+    "auroc": 0.9685,
+    "auprc": 0.9325,
+    "ci_lo": 0.9588,
+    "ci_hi": 0.9771,
+    "ci_method": "bootstrap_1000x_test_set_seed42",
+    "model_type": "inductive_gnn",
+    "epochs": 300,
+    "lr": 0.0001,
+    "heads": 4,
+    "concat": false,
+    "hidden_channels": 128,
+    "out_channels": 128,
+    "dropout": 0.1,
+    "residual_connections": true,
+    "note": "Residual connections required to prevent embedding collapse on sparse bipartite edges"
+  },
+  "node2vec_transductive": {
+    "auroc": 0.9965,
+    "ci_lo": 0.9924,
+    "ci_hi": 0.9997,
+    "ci_method": "bootstrap_1000x_test_set_seed42",
+    "model_type": "transductive_topology",
+    "note": "Supplementary only — random walks see all edges including test edges. Incomparable to inductive GNNs.",
+    "excluded_from_primary_table": true
+  },
+  "node2vec_inductive": {
+    "auroc": 0.9867,
+    "ci_lo": 0.9806,
+    "ci_hi": 0.9921,
+    "auprc": 0.9642,
+    "ci_method": "bootstrap_1000x_test_set_seed42",
+    "model_type": "inductive_topology_only",
+    "note": "Train-walk only (test/val edges withheld). Topology without ESM-2 features. Excluded from primary table — no protein features.",
+    "excluded_from_primary_table": true
   },
   "quantum_kernel": {
-    "auroc": 0.873125,
-    "auprc": 0.8429047518785302,
-    "note": "node_classification_not_link_prediction"
+    "auroc": 0.8731,
+    "auprc": 0.8429,
+    "note": "node_classification_not_link_prediction — different task, supplementary only"
   },
   "classical_rbf": {
-    "auroc": 0.933083176985616,
-    "auprc": 0.8983671078868148,
-    "note": "node_classification_not_link_prediction"
+    "auroc": 0.9331,
+    "auprc": 0.8984,
+    "note": "node_classification_not_link_prediction — different task, supplementary only"
   }
 }
