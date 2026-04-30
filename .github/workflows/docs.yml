@@ -7,8 +7,6 @@ on:
 jobs:
   build-docs:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -16,8 +14,3 @@ jobs:
       - run: pip install -e . -r docs/requirements.txt
       - name: Build Sphinx docs
         run: cd docs && sphinx-build -b html . _build/html
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/_build/html
