@@ -187,6 +187,9 @@ def main():
                 "auroc_mean": auroc_m, "auroc_lo": auroc_lo, "auroc_hi": auroc_hi,
                 "auprc_mean": auprc_m, "auprc_lo": auprc_lo, "auprc_hi": auprc_hi,
                 "n_test": len(y_true),
+                # Evaluation mode metadata — critical for manuscript reporting
+                "evaluation_mode": "Inductive",
+                "notes": "Test edges withheld from message-passing during GNN training",
             })
 
     # ------------------------------------------------------------------ #
@@ -213,6 +216,14 @@ def main():
             "auroc_mean": auroc_m, "auroc_lo": auroc_lo, "auroc_hi": auroc_hi,
             "auprc_mean": auprc_m, "auprc_lo": auprc_lo, "auprc_hi": auprc_hi,
             "n_test": len(y_true),
+            # IMPORTANT: Node2Vec is TRANSDUCTIVE — random walks are trained on the
+            # full graph including test edges.  This inflates AUROC and makes it
+            # incomparable to inductive GNN results.  Do NOT include Node2Vec in
+            # the same primary-benchmark table as GraphSAGE/GAT.
+            # Report separately as a topology upper-bound in supplementary.
+            "evaluation_mode": "Transductive",
+            "notes": "Random walks trained on full graph including test edges; "
+                     "upper bound only — not comparable to inductive GNNs",
         })
 
     # ------------------------------------------------------------------ #
