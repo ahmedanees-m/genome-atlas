@@ -100,6 +100,46 @@ genome-atlas --help
 
 ---
 
+## Validation
+
+`select_editor()` was validated against **10 published therapeutic editing
+scenarios** from peer-reviewed literature (2016–2025).
+**Result: 7/10 correct in top-3 recommendations (70%).**
+The three misses are scientifically informative — each reveals a specific
+boundary of the current heuristic and motivates the companion PEN-SCORE work.
+
+[Full validation report → VALIDATION.md](VALIDATION.md)
+
+---
+
+## Annotation Coverage
+
+ATLAS v0.6.0 includes **16 foundational systems** covering ~39% of a curated
+reference set of 49 well-characterised therapeutic tools. This is deliberate:
+only systems with published mechanistic characterisation, structural evidence,
+and therapeutic relevance are included.
+
+Coverage highlights:
+- **100%** of mechanism classes (DSB nuclease, DSB-free integrase/recombinase, transposase)
+- **100%** of RNA-guided families (CRISPR-Cas, CAST, bridge RNA, Fanzor/OMEGA, prime editing)
+- **100%** of Fanzor/OMEGA and evolved-system families
+- Missing: additional Cas9 PAM variants, base editors (CBE/ABE), Cas13 RNA editors → planned v0.7
+
+Run `scripts/audit_coverage.py` to reproduce the coverage table.
+[Full provenance → DATA_PROVENANCE.md](DATA_PROVENANCE.md)
+
+---
+
+## Update Strategy
+
+The gene editing field evolves rapidly. ATLAS follows a documented versioning
+and update cadence — v0.7 (Q3 2026) adds Cas9 variants and base editors;
+v1.0 integrates the full 802k metagenomic catalog after Paper 2 acceptance.
+
+[Full update policy → UPDATE_STRATEGY.md](UPDATE_STRATEGY.md)
+
+---
+
 ## Benchmark Results (v0.6.0)
 
 **Task**: Protein→Domain (`HAS_DOMAIN`) link prediction, 10% hold-out test set (20% combined val+test).
@@ -332,7 +372,7 @@ The unit test suite passes locally without any VM data. Integration and regressi
 
 4. **GAT residual connections prevent embedding collapse**: Without residual connections, GAT produces only 4 unique embeddings across 10,000 Protein nodes because most nodes receive zero messages from their System neighbours. The residual (`x_dict[nt] = new_x[nt] + x`) restores ESM-2 diversity. GraphSAGE does not require this fix (self-features are concatenated internally by SAGEConv).
 
-5. **Negative sampling is type-consistent**: All link prediction negatives are sampled from (src_type, dst_type) pools matching the positive edge type. This prevents the trivial classification pattern where a model learns "is the destination a Domain node?" rather than learning embedding similarity.
+5. **Selection accuracy is 70% top-3 on 10 published scenarios**: `select_editor()` correctly ranks the published editor in the top 3 for 7/10 therapeutic use cases from the peer-reviewed literature. The three misses reveal specific heuristic boundaries — DSB penalisation for moderate AAV cargo, inability to distinguish wild-type from PACE-evolved CAST, and conflation of edit precision with editor component size. See [VALIDATION.md](VALIDATION.md).
 
 ---
 

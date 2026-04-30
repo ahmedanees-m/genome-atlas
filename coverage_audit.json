@@ -1,0 +1,130 @@
+{
+  "CRISPR-Cas nucleases": {
+    "reference_count": 17,
+    "atlas_found": 4,
+    "coverage_pct": 23.5,
+    "found": [
+      "SpCas9",
+      "SpCas9-NG",
+      "Cas12a",
+      "Cas12f"
+    ],
+    "missing": [
+      "SaCas9",
+      "CjCas9",
+      "NmCas9",
+      "St1Cas9",
+      "evoCas9",
+      "HiFi Cas9",
+      "Sniper-Cas9",
+      "Cas12b",
+      "Cas12g",
+      "Cas12k",
+      "Cas13a",
+      "Cas13b",
+      "Cas13d"
+    ]
+  },
+  "Base and prime editors": {
+    "reference_count": 8,
+    "atlas_found": 1,
+    "coverage_pct": 12.5,
+    "found": [
+      "PE2 (prime editor)"
+    ],
+    "missing": [
+      "CBE (cytosine base editor)",
+      "ABE (adenine base editor)",
+      "CGBE",
+      "PE3",
+      "PE4",
+      "twinPE",
+      "ePE"
+    ]
+  },
+  "CRISPR-associated transposases (CAST)": {
+    "reference_count": 6,
+    "atlas_found": 4,
+    "coverage_pct": 66.7,
+    "found": [
+      "CAST-I-F",
+      "CAST-I-F_evoCAST",
+      "CAST-V-K",
+      "TnsABC (Tn7-CAST)"
+    ],
+    "missing": [
+      "CAST-I-B",
+      "CAST-V-E"
+    ]
+  },
+  "Bridge recombinases": {
+    "reference_count": 3,
+    "atlas_found": 1,
+    "coverage_pct": 33.3,
+    "found": [
+      "IS621 bridge recombinase"
+    ],
+    "missing": [
+      "IS110 bridge",
+      "IS629"
+    ]
+  },
+  "Fanzor / OMEGA": {
+    "reference_count": 4,
+    "atlas_found": 4,
+    "coverage_pct": 100.0,
+    "found": [
+      "SpuFz1 (Fanzor1)",
+      "SpuFz1 V4",
+      "MmeFz2 (Fanzor2)",
+      "enNlovFz2"
+    ],
+    "missing": []
+  },
+  "Site-specific recombinases": {
+    "reference_count": 5,
+    "atlas_found": 2,
+    "coverage_pct": 40.0,
+    "found": [
+      "Bxb1 integrase",
+      "Cre recombinase"
+    ],
+    "missing": [
+      "phiC31",
+      "Flp recombinase",
+      "TP901-1"
+    ]
+  },
+  "Transposases": {
+    "reference_count": 4,
+    "atlas_found": 1,
+    "coverage_pct": 25.0,
+    "found": [
+      "Tn5"
+    ],
+    "missing": [
+      "Tn7",
+      "PiggyBac",
+      "Sleeping Beauty"
+    ]
+  },
+  "Engineered / evolved systems": {
+    "reference_count": 2,
+    "atlas_found": 2,
+    "coverage_pct": 100.0,
+    "found": [
+      "PE2 prime editor",
+      "eePASSIGE"
+    ],
+    "missing": []
+  },
+  "_summary": {
+    "atlas_system_count": 16,
+    "reference_universe_size": 49,
+    "covered_by_atlas": 19,
+    "overall_coverage_pct": 38.8,
+    "mechanism_classes_covered": "DSB_NUCLEASE, DSB_FREE_TRANSEST_RECOMBINASE, TRANSPOSASE \u2014 100%",
+    "rna_guided_families_covered": "CRISPR-Cas, CAST, Bridge RNA, Fanzor/OMEGA, Prime editing \u2014 100%",
+    "note": "Coverage is partial by design: ATLAS v0.6.0 includes only systems with (a) published mechanistic characterisation, (b) resolved or high-confidence AlphaFold structure, (c) therapeutic or biotechnological relevance. All major mechanism classes and RNA-guided families are represented."
+  }
+}
