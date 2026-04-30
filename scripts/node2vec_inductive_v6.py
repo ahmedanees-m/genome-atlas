@@ -246,12 +246,12 @@ def main():
     if len(primary):
         row = primary.iloc[0]
         print("\n" + "=" * 72)
-        print("INDUCTIVE Node2Vec — Protein_HAS_DOMAIN_Domain")
+        print("INDUCTIVE Node2Vec - Protein_HAS_DOMAIN_Domain")
         print("=" * 72)
         print(f"  AUROC = {row['auroc_mean']:.4f}  [{row['auroc_lo']:.4f}, {row['auroc_hi']:.4f}]")
         print(f"  AUPRC = {row['auprc_mean']:.4f}")
         print(f"  n_test = {row['n_test']}")
-        print(f"  Transductive AUROC = 0.9965  →  Δ = {0.9965 - row['auroc_mean']:.4f}")
+        print(f"  Transductive AUROC = 0.9965  ->  delta = {0.9965 - row['auroc_mean']:.4f}")
         print("=" * 72)
 
     return 0
