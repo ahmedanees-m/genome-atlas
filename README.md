@@ -123,13 +123,15 @@ pip install -e ".[gnn]"
 ### Python API
 
 ```python
+from pathlib import Path
+
 from genome_atlas import Atlas
 
 # Load the knowledge graph and associated data
 atlas = Atlas(
-    graph_path="path/to/atlas.gpickle",
-    embeddings_path="path/to/esm2_150M_v6.parquet",
-    targets_path="path/to/targets_v2.parquet",
+    gpickle_path=Path("path/to/atlas.gpickle"),
+    embeddings_path=Path("path/to/esm2_150M_v6.parquet"),
+    targets_path=Path("path/to/targets_v2.parquet"),
 )
 
 # --- Query a system ---
@@ -138,7 +140,7 @@ print(system["name"], system["mechanism_bucket"])
 # -> SpCas9  DSB_NUCLEASE
 
 # --- List all systems filtered by mechanism ---
-df = atlas.systems(mechanism_bucket="DSB_FREE_PRIME_EDITOR")
+df = atlas.systems(mechanism_bucket="DSB_FREE_TRANSEST_RECOMBINASE")
 print(df[["name", "mechanism_bucket"]])
 
 # --- Find all proteins in the graph for a system ---
@@ -155,7 +157,7 @@ recs = atlas.select_editor(
 )
 
 for r in recs:
-    print(f"{r.system:20s}  score={r.pen_score:.3f}  dsb_free={r.dsb_free}")
+    print(f"{r.system:20s}  score={r.pen_score:.3f}  mechanism={r.mechanism}")
 ```
 
 ### CLI
@@ -180,7 +182,7 @@ from genome_atlas import load_systems, resolve_system_name
 systems = load_systems()
 iscro4 = systems["ISCro4"]
 print(iscro4.uniprot)        # D2TGM5
-print(iscro4.mechanism_bucket)  # DSB_FREE_BRIDGE_RECOMBINASE
+print(iscro4.mechanism_bucket)  # DSB_FREE_TRANSEST_RECOMBINASE
 
 # Resolve a deprecated name (e.g. from an old paper) to the canonical one
 canonical = resolve_system_name("IS622")  # -> "ISCro4" + DeprecationWarning
@@ -429,7 +431,7 @@ genome-atlas/
 │   ├── unit/                          # Fast - no data files required
 │   │   ├── test_aliases.py            # ISCro4/IS622 alias resolution (22 tests)
 │   │   ├── test_api.py                # Atlas API basics
-│   │   ├── test_api_extended.py       # Full graph traversal coverage (34 tests)
+│   │   ├── test_api_extended.py       # Full graph traversal coverage (38 tests)
 │   │   ├── test_cli.py                # CLI basics
 │   │   ├── test_cli_extended.py       # CLI command integration (7 tests)
 │   │   ├── test_graph_views.py        # get_graph views (18 tests; skipped without torch)

@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`genome_atlas.SystemEntry`** - frozen dataclass exposing per-system metadata
   fields (`name`, `aliases`, `uniprot`, `pfam`, `organism`, `mechanism_bucket`,
   `tier_a_gate`, and others).
-- **`tests/unit/test_aliases.py`** - 16 new unit tests covering ISCro4 canonical
+- **`tests/unit/test_aliases.py`** - 22 new unit tests covering ISCro4 canonical
   naming, IS622 alias resolution, DeprecationWarning emission, and top-level
   package import surface.
 - `foundational_systems.yaml`: new fields on the ISCro4 entry - `aliases`,

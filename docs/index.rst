@@ -18,12 +18,14 @@ Quick Start
 
 .. code-block:: python
 
+   from pathlib import Path
+
    from genome_atlas.api import Atlas
 
    atlas = Atlas(
-       graph_path="atlas.gpickle",
-       embeddings_path="embeddings.parquet",
-       targets_path="targets.parquet",
+       gpickle_path=Path("atlas.gpickle"),
+       embeddings_path=Path("embeddings.parquet"),
+       targets_path=Path("targets.parquet"),
    )
 
    # Query a system

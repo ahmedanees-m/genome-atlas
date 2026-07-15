@@ -18,8 +18,9 @@ available views (`primary` and `full`), and how to select between them.
 | `RNA`       | RNA guide/scaffold component (e.g. bridge_RNA, sgRNA) | zeros (topological)   |
 
 Protein nodes with no ESM-2 embedding (e.g. synthetic or not-yet-deposited
-proteins) have zero feature vectors. This is the **IS110 OOD scenario** that
-prompted the Tier-A gate in `mech-class` v0.5.2.
+proteins) have zero feature vectors. Novel IS110-family proteins fall into this
+out-of-distribution case, which the mechanism classifier resolves with a
+domain-based gate.
 
 ---
 

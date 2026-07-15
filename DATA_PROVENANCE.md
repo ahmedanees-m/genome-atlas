@@ -12,7 +12,7 @@ deliberately excluded, and how the coverage compares to the broader literature.
 | Total nodes (full graph) | ~13,400+ (rebuild pending) |
 | Total nodes (training graph) | ~11,762+ (rebuild pending) |
 | Total edges | ~11,820+ (rebuild pending) |
-| Node types | 6 (Protein, Domain, Structure, Mechanism, Organism, System) |
+| Node types | 7 (Protein, Domain, Structure, RNA, Mechanism, Organism, System) |
 | Edge types | 4 primary (HAS_DOMAIN, HAS_PROTEIN, USES_MECHANISM, STRUCTURE_OF) + 3 secondary via `graph_view='full'` |
 | Foundational systems | 28 (ISCro4 added in v0.7.1; canonical name adopted in v0.7.2) |
 | Proteins | 9,501+ (D2TGM5 added) |

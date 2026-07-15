@@ -8,7 +8,7 @@ load_systems() -> dict[str, SystemEntry]
 
 SystemEntry
     Frozen dataclass exposing the per-system metadata fields used by
-    PEN-COMPARE v3.2 and downstream packages.
+    downstream packages.
 
 Alias resolution
 ----------------
