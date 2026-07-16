@@ -47,7 +47,7 @@ scenarios:
       delivery: "electroporation"
     expected_top3: [IS621_bridge_recombinase]
     published_editor: IS621_bridge_recombinase
-    reference: "Perry 2025 Science"
+    reference: "Durrant et al. 2024 Nature"
 
   - name: "Liver targeting - PCSK9 knockdown"
     params:

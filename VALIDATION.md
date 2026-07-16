@@ -32,12 +32,14 @@ asked to rank candidates without prior knowledge of the published outcome.
 | 2 | DMD, exon skipping (AAV) | SpuFz1 V4 (Fanzor) | ~30% correction in mdx | n/a | No | Wei 2025 *Nat Chem Biol* |
 | 3 | CAR-T knockin (5 kb, TRAC) | CAST-I-F evoCAST | ~60% knockin in T cells | n/a | No | Witte 2025 *Science* |
 | 4 | Point mutation, SNV (AAV) | PE2 prime editor | ~30% editing, no indels | n/a | No | Anzalone 2019 *Nature* |
-| 5 | Megabase-scale rearrangement | IS621 bridge recombinase | ~20% efficiency | #3 | Yes | Perry 2025 *Science* |
+| 5 | Megabase-scale rearrangement | IS621 bridge recombinase | programmable inversion | #3 | Yes | Durrant et al. 2024 *Nature* |
 | 6 | Liver, PCSK9 knockdown | SpCas9 | ~95% KO in NHP | #1 | Yes | Musunuru 2021 *NEJM* |
 | 7 | Retinal, CEP290 restoration | PE2 prime editor | ~10% correction in vivo | #1 | Yes | Suh 2024 *Nat Biomed Eng* |
 | 8 | Immune cell, TRAC KO | SpCas9 | ~95% KO in primary T cells | #1 | Yes | Stadtmauer 2020 *Science* |
 | 9 | Landing pad, Bxb1 attP integration | Bxb1 integrase | ~90% integration | #3 | Yes | Kerafast 2016 |
 | 10 | Compact AAV delivery, deletion | Cas12f | ~50% indels in vivo | #3 | Yes | Kim 2022 *Nat Biotechnol* |
+
+Scenario 5 note: IS621 (Durrant et al. 2024, *Nature*) is the founding IS110 bridge recombinase, and the selector recommends the bridge-recombinase class for large-scale rearrangement. Megabase-scale (0.93 Mb) rearrangement at ~20% efficiency in human cells was specifically demonstrated with the related bridge recombinase ISCro4/IS622 (Perry et al. 2025, *Science*, doi:10.1126/science.adz0276).
 
 ---
 
@@ -83,7 +85,7 @@ shows this design choice explicitly for the 7 successful scenarios.
 | SpCas9 (TRAC) | ~95% | 0.42 | Same |
 | Cas12f (compact AAV) | ~50% | 0.68 | AAV-fit bonus raises score |
 | Bxb1 (landing pad) | ~90% | 0.75 | DSB-free integrase premium |
-| IS621 (megabase) | ~20% | 0.89 | Highest PenScore; lowest efficiency |
+| IS621 (megabase) | ~20% (ISCro4) | 0.89 | Highest PenScore; lowest efficiency |
 | PE2 (retinal, in vivo) | ~10% | 0.63 | Precision premium despite low efficiency |
 
 PenScore prioritises safety (non-destructive mechanisms) and delivery
